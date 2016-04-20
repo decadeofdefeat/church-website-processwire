@@ -5,11 +5,12 @@ To preview the example website, visit http://church.markgoldsmith.me
 
 Included in this repository is the .sql database file which has all the preloaded content shown on the example website.
 
-For instructions on installing ProcessWire, visit https://github.com/ryancramerdesign/ProcessWire/.
+For instructions on installing ProcessWire, visit https://github.com/ryancramerdesign/ProcessWire/
 
-Specifically for this installation that comes preloaded with images and dummy content, you can just install the file directory as is to your server, and then update the config.php file in the site directory with your database credentials and HTTP hostname. Use the church.sql file to import the dummy data and ProcessWire settings into your database.
+Specifically for this installation that comes preloaded with images and dummy content, you can just install the file directory as is to your server, and then update the config.php file in the /site directory with your database credentials and HTTP hostname. Use the church.sql file to import the dummy data and ProcessWire settings into your database.
 
-Admin login: yoursite.com/admin
+Admin login:
+yoursite.com/admin
 Username: admin
 Password: Tz2$14#
 
