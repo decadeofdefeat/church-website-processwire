@@ -1,0 +1,495 @@
+<?php
+
+
+class ProcessEventsDuplicator extends Process implements Module {
+
+
+    public static function getModuleInfo() {
+        return array(
+            'title' => 'Events Duplicator',
+            'summary' => 'Duplicate recurring events',
+            'version' => 100,
+            'autoload' => true,
+            'singular' => true,
+            'permission' => 'page-edit'
+            );
+    }
+
+
+    public function init() {
+
+        parent::init();
+        $this->config->scripts->add($this->config->urls->ProcessEventsDuplicator . 'jquery.datepick.js');
+        $this->config->styles->add($this->config->urls->ProcessEventsDuplicator . 'jquery.datepick.css');
+
+    }
+
+
+
+
+
+
+
+    public function execute(){
+
+        $this->fuel->breadcrumbs->add(new Breadcrumb('../', 'Event Duplicator'));
+
+        $id = 0;
+        $from = '';
+        $to = '';
+        $this->setFuel('processHeadline', "Add Event Instances");
+
+        $form = $this->modules->get("InputfieldForm");
+        $form->method = 'post';
+        $form->action = 'save/';
+
+
+        $field = $this->modules->get("InputfieldSelect");
+        $field->label = 'Select Event to Duplicate';
+        $field->description = 'Only events with "Event Repeats" checked will appear in this list';
+        $field->required = 1;
+
+        $field->name = 'event_page';
+        $field->id = 'event_page';
+
+        $field->addOption(-10, "Choose an Event");
+        $events = wire('pages')->find("template=event, event_date_end>today, event_repeater_boolean=1, parent='/events/', include=hidden");
+        foreach ($events as $e) {
+            $field->addOption($e->id, $e->title." - ".date("Y-m-d", $e->event_date) );
+        }
+
+        $form->add($field);
+
+
+
+        $field = $this->modules->get("InputfieldSelect");
+        $field->label = 'Event Frequency';
+        $field->name = 'event_type';
+        $field->id = 'event_type';
+        $field->addOption('daily', "Daily", array('selected'=>'selected'));
+        $field->addOption('weekly', "Weekly");
+        $field->addOption('biweekly', "Bi-weekly");
+        $field->addOption('monthly', "Monthly");
+        $form->add($field);
+
+
+        $field = $this->modules->get("InputfieldSelect");
+        $field->label = 'Day of the Week (for Weekly Events)';
+        $field->name = 'event_day';
+        $field->id = 'event_day';
+        $field->collapsed = true;
+        $field->addOption('SU', "Sunday", array('selected'=>'selected'));
+        $field->addOption('MO', "Monday");
+        $field->addOption('TU', "Tuesday");
+        $field->addOption('WE', "Wednesday");
+        $field->addOption('TH', "Thursday");
+        $field->addOption('FR', "Friday");
+        $field->addOption('SA', "Saturday");
+        $form->add($field);
+
+
+
+        $field = $this->modules->get("InputfieldSelect");
+        $field->label = 'Monthly Event Appearance (part 1)';
+        $field->name = 'week_number';
+        $field->id = 'week_number';
+        $field->collapsed = true;
+        $field->addOption('1', "1st", array('selected'=>'selected'));
+        $field->addOption('2', "2nd");
+        $field->addOption('3', "3rd");
+        $field->addOption('4', "4th");
+        $field->addOption('5', "5th");
+        $form->add($field);
+
+        $field = $this->modules->get("InputfieldSelect");
+        $field->label = 'Monthly Event Appearance (part 2)';
+        $field->name = 'week_day';
+        $field->id = 'week_day';
+        $field->collapsed = true;
+        $field->addOption('SU', "Sunday", array('selected'=>'selected'));
+        $field->addOption('MO', "Monday");
+        $field->addOption('WE', "Wednesday");
+        $field->addOption('TH', "Thursday");
+        $field->addOption('FR', "Friday");
+        $field->addOption('SA', "Saturday");
+        $form->add($field);
+
+
+        $field = $this->modules->get("InputfieldDatetime");
+        $field->label = 'Start Date';
+        $field->name = 'start_date';
+        $field->id = 'start_date';
+        $field->datepicker = 3;
+        $field->timeInputFormat = 'g:i A';
+        $field->value = '';
+        $field->required = 1;
+        $form->add($field);
+
+        $field = $this->modules->get("InputfieldDatetime");
+        $field->label = 'End Date';
+        $field->name = 'end_date';
+        $field->id = 'end_date';
+        $field->datepicker = 3;
+        $field->timeInputFormat = 'g:i A';
+        $field->value = '';
+        $field->required = 1;
+        $form->add($field);
+
+
+        $field = $this->modules->get("InputfieldText");
+        $field->label = 'Excluded Dates';
+        $field->name = 'excludeDates';
+        $field->id = 'excludeDates';
+        $field->value = '';
+        $field->attr('size', 80);
+        $form->add($field);
+
+        $field = $this->modules->get("InputfieldText");
+        $field->label = 'Custom Included Dates';
+        $field->name = 'customDates';
+        $field->id = 'customDates';
+        $field->attr('size', 80);
+        $field->value = '';
+        $form->add($field);
+
+
+        $field = $this->modules->get("InputfieldCheckbox");
+        $field->label = 'Exclude June Dates';
+        $field->name = 'exclude_june';
+        $form->add($field);
+
+        $field = $this->modules->get("InputfieldCheckbox");
+        $field->label = 'Exclude July Dates';
+        $field->name = 'exclude_july';
+        $form->add($field);
+
+        $field = $this->modules->get("InputfieldCheckbox");
+        $field->label = 'Exclude August Dates';
+        $field->name = 'exclude_august';
+        $form->add($field);
+
+
+        $script = <<< _END
+
+<script type="text/javascript">
+
+    $("#event_type").on('change', function(){
+         var _value = $("#event_type").val();
+         if(_value == 'monthly')
+         {
+             $("#wrap_week_number").removeClass( "InputfieldStateCollapsed" );
+             $("#wrap_week_day").removeClass( "InputfieldStateCollapsed" );
+
+             $("#wrap_event_day").addClass( "InputfieldStateCollapsed" );
+
+         } else if( _value == 'weekly' || _value == 'bi-weekly')
+         {
+            $("#wrap_event_day").removeClass( "InputfieldStateCollapsed" );
+
+            $("#wrap_week_number").addClass( "InputfieldStateCollapsed" );
+            $("#wrap_week_day").addClass( "InputfieldStateCollapsed" );
+         }
+         else
+         {
+            $("#wrap_week_number").addClass( "InputfieldStateCollapsed" );
+            $("#wrap_week_day").addClass( "InputfieldStateCollapsed" );
+            $("#wrap_event_day").addClass( "InputfieldStateCollapsed" );
+         }
+    });
+
+    $('#excludeDates').datepick({
+        multiSelect: 999, monthsToShow: 3, monthsToStep: 3,
+        prevText: 'Prev months', nextText: 'Next months'});
+
+    $('#customDates').datepick({
+        multiSelect: 999, monthsToShow: 3, monthsToStep: 3,
+        prevText: 'Prev months', nextText: 'Next months'});
+</script>
+
+_END;
+
+        $field = $this->modules->get("InputfieldButton");
+        $field->type = 'submit';
+        $field->value = 'Add Event Instances';
+        $form->add($field);
+
+        return $form->render() . $script;
+    }
+
+
+
+
+     /**
+     * Process Event Instances .. handles the iteration of events
+     *   .. Returns Array of Dates
+     *
+     */
+    public function processEventInstances( $start_date, $end_date, $event_day, $event_type, $week_number, $excludeAry, $includeAry, $exclude_june, $exclude_july, $exclude_august  )
+    {
+        $month_ary = array(1,2,3,4,5,6,7,8,9,10,11,12);
+
+        if($exclude_june == 1 ) $month_ary = array_diff($month_ary, array(6));
+        if($exclude_july == 1 ) $month_ary = array_diff($month_ary, array(7));
+        if($exclude_august == 1 ) $month_ary = array_diff($month_ary, array(8));
+
+        switch($week_number)
+        {
+            case "1":
+                $event_day_recur_ary = array(1,2,3,4,5,6,7);
+            break;
+            case "2":
+                $event_day_recur_ary = array(8,9,10,11,12,13,14);
+            break;
+            case "3":
+                $event_day_recur_ary = array(15,16,17,18,19,20,21);
+            break;
+            case "4":
+                $event_day_recur_ary = array(22,23,24,25,26,27,28);
+            break;
+            case "5":
+                $event_day_recur_ary = array(29,30,31);
+            break;
+        }
+
+        $whenBool = true;
+
+        $addedDates = array();
+
+        if($event_type=='daily'){
+
+                $start = new DateTime($start_date);
+                $end = new DateTime($end_date);
+
+                $r = new When();
+                $r->recur($start, 'daily')
+                  ->until($end)
+                  ->bymonth($month_ary);
+
+                while($result = $r->next())
+                {
+                    $dd = $result->format('Y-m-d');
+
+                    if (!in_array($dd, $excludeAry))
+                    {
+                        $addedDates[] = $dd;
+                    }
+
+                }
+
+
+        } elseif($event_type=="weekly"){
+
+                $start = new DateTime($start_date);
+                $end = new DateTime($end_date);
+
+                $r = new When();
+                $r->recur($start, 'weekly')
+                  ->until($end)
+                  ->bymonth($month_ary)
+                  ->byday(array($event_day));
+
+                while($result = $r->next())
+                {
+                    $dd = $result->format('Y-m-d');
+
+                    if (!in_array($dd, $excludeAry))
+                    {
+                        $addedDates[] = $dd;
+                    }
+
+                }
+
+        } elseif($event_type=="biweekly"){
+
+
+                $start = new DateTime($start_date);
+                $end = new DateTime($end_date);
+
+                $r = new When();
+                $r->recur($start, 'weekly')
+                  ->until($end)
+                  ->interval(2)
+                  ->bymonth($month_ary)
+                  ->byday(array($event_day));
+
+                while($result = $r->next())
+                {
+                    $dd = $result->format('Y-m-d');
+
+                    if (!in_array($dd, $excludeAry))
+                    {
+                        $addedDates[] = $dd;
+                    }
+
+                }
+
+        } elseif($event_type=="monthly"){
+
+                $start = new DateTime($start_date);
+                $end = new DateTime($end_date);
+
+                $r = new When();
+
+                $r->recur($start, 'monthly')
+                  ->until($end)
+                  ->bymonth($month_ary)
+                  ->byday(array($event_day))
+                  ->bymonthday($event_day_recur_ary);
+
+                while($result = $r->next())
+                {
+                    $dd = $result->format('Y-m-d');
+
+                    if (!in_array($dd, $excludeAry))
+                    {
+                        $addedDates[] = $dd;
+                    }
+
+                }
+            }
+
+
+
+        foreach ($includeAry as $key => $value) {
+
+            if (in_array($value, $addedDates) == false )
+            {
+                $addedDates[] = $value;
+            }
+
+        }
+
+
+        //print_R($addedDates);
+
+        return $addedDates;
+    }
+
+
+
+
+
+    /**
+     * Save Redirect - Called when the URL is ./save/
+     *
+     */
+    public function ___executeSave() {
+
+        if(!class_exists('When', false)) {
+            require_once(wire('config')->paths->ProcessEventsDuplicator . 'When/When.php');
+            require_once(wire('config')->paths->ProcessEventsDuplicator . 'When/When_Iterator.php');
+        }
+
+        $eventid = (int) $this->input->post->event_page;
+        //$eventid = wire('sanitizer')->selectorValue($eventid);
+
+        $excludeDates = $this->input->post->excludeDates;
+        $customDates = $this->input->post->customDates;
+        $start_date = date("Y-m-d", strtotime($this->input->post->start_date));
+        $end_date = date("Y-m-d", strtotime($this->input->post->end_date));
+        $event_type = $this->input->post->event_type;
+        $event_day = $this->input->post->event_day;
+        $week_day = $this->input->post->week_day;
+        $week_number = $this->input->post->week_number;
+
+
+        $exclude_june = $this->input->post->exclude_june;
+        $exclude_july = $this->input->post->exclude_july;
+        $exclude_august = $this->input->post->exclude_august;
+
+        $excludeAry = array();
+        if( $excludeDates != '')
+        {
+            $excludeArrayStrings = explode(',', $excludeDates);
+            foreach ($excludeArrayStrings as $key => $value) {
+                $excludeAry[] = date("Y-m-d", strtotime($value));
+            }
+        }
+
+        $includeAry = array();
+        if( $customDates != '')
+        {
+            $includeArrayStrings = explode(',', $customDates);
+            foreach ($includeArrayStrings as $key => $value) {
+                $includeAry[] = date("Y-m-d", strtotime($value));
+            }
+        }
+
+        if( $event_type == 'monthly')
+        {
+            $event_day = $week_day;
+        }
+
+        $eventsArray = $this->processEventInstances( $start_date, $end_date, $event_day, $event_type, $week_number, $excludeAry, $includeAry, $exclude_june, $exclude_july, $exclude_august  );
+
+       // print "array count is ".count($eventsArray) ;
+        $this->message("Created ".count($eventsArray). " events");
+
+        /// loop through date array and add new event repeater pages
+        if( count($eventsArray) > 0 )
+        {
+
+            $eventid = wire('sanitizer')->selectorValue($eventid);
+
+            // first trash any current children of this event
+            $oldevents = wire('pages')->find("parent=$eventid");
+
+            foreach ($oldevents as $old) {
+               wire('pages')->trash($old);
+            }
+
+
+            $parent_event = wire('pages')->get("id=$eventid");
+
+            foreach ($eventsArray as $eventDate) {
+
+                print "<br> Event date is".$eventDate;
+
+                $event = $parent_event->child("event_date=$eventDate"); // do we already have this post?
+
+                if(!$event->id)
+                {
+                    $event = new Page();
+                    $event->template = 'event-repeater';
+                    $event->parent = $eventid;
+
+                    $eventName = wire('sanitizer')->pageName( $eventDate." ".$parent_event->title );
+                    $event->name = $eventName;
+                    $event->title = $parent_event->title;
+                    $event->event_date = $eventDate;
+                    $event->save();
+                }
+
+
+            }
+
+        }
+
+        $this->message("Successfully created event instances.");
+        $this->session->redirect("../"); // back to list
+
+    }
+
+
+        public function ___install() {
+        parent::___install();
+
+        $p = new Page();
+        $p->template = $this->templates->get("admin");
+        $p->parent = $this->pages->get("template=admin, name=setup");
+        $p->title = 'Events Duplicator';
+        $p->name = 'events-duplicator';
+        $p->process = $this;
+        $p->save();
+
+
+    }
+
+    public function ___uninstall() {
+        $p = $this->pages->get('template=admin, name=events-duplicator');
+        $p->delete();
+    }
+
+
+
+}

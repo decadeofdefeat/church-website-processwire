@@ -1,0 +1,305 @@
+<?php
+
+/**
+ * ProcessWire Schedule Pages Module
+ *
+ * Copyright 2011 by Jasper Metselaar (jasper@formmailer.net)
+ * Licensed under GNU/GPL v2, see http://processwire.com/about/license/
+ *
+ * This module allows makes it possible to schedule (un)publication of
+ * pages. This version of the plugin module relies on the LazyCron
+ * module by Ryan Cramer.
+ *
+ * Module is intended for:
+ *
+ * ProcessWire 2.x
+ * Copyright (C) 2011 by Ryan Cramer
+ * Licensed under GNU/GPL v2, see LICENSE.TXT
+ *
+ * http://www.processwire.com
+ * http://www.ryancramer.com
+ *
+ *
+ * Usage:
+ * ======
+ * 1. 	Place the SchedulePages.module file into the
+ *		site/modules folder and install the plugin from the admin
+ *		area.
+ * 2.	Install the LazyCron module (if you haven't already). This
+ *		module is part of the Processwire core, but it isn't
+ *		activated by default.
+ * 3.	Add the following date fields to your template:
+ *		publish_from
+ *		publish_until
+ *		Note: the fields are already created during the
+ *		installation of the module
+ * 4.	That't all. LazyCron will run take care of (un)publishing
+ *		your pages that have a the publish dates set. It will run
+ *		every hour by default (you can choose interval from module
+ *		options).
+ *
+ *		Please note: LazyCron hooks are only executed during
+ *		pageviews that are delivered by ProcessWire. They are not
+ *		executed when using ProcessWire's API from other scripts.
+ */
+
+class SchedulePages extends WireData implements Module, ConfigurableModule {
+
+	/**
+	 * getModuleInfo is a module required by all modules to tell ProcessWire about them
+	 *
+	 * @return array
+	 *
+	 */
+	public static function getModuleInfo() {
+
+		return array(
+
+			// The module'ss title, typically a little more descriptive than the class name
+			'title' => 'Schedule Pages',
+
+			// version: major, minor, revision, i.e. 100 = 1.0.0
+			'version' => 111,
+
+			// summary is brief description of what this module is
+			'summary' => 'This module allows scheduling (un)publication of pages.',
+
+			// Optional URL to more information about the module
+			'href' => 'http://www.processwire.com/talk/topic/711-release-schedulepages/',
+
+			// singular=true: indicates that only one instance of the module is allowed.
+			// This is usually what you want for modules that attach hooks.
+			'singular' => true,
+
+			// autoload=true: indicates the module should be started with ProcessWire.
+			// This is necessary for any modules that attach runtime hooks, otherwise those
+			// hooks won't get attached unless some other code calls the module on it's own.
+			// Note that autoload modules are almost always also 'singular' (seen above).
+			'autoload' => true,
+			// This module requires the LazyCron module.
+			'requires' => "LazyCron"
+			);
+	}
+
+	/**
+	 * Initialize the module
+	 *
+	 * ProcessWire calls this when the module is loaded. For 'autoload' modules, this will be called
+	 * when ProcessWire's API is ready. As a result, this is a good place to attach hooks.
+	 *
+	 */
+	// initialize the hook in your AutoLoad module
+	public function init() {
+
+		// Run this module on a interval using LazyCron
+		if ($this->cronInterval) {
+			$this->addHook("LazyCron::{$this->cronInterval}", $this, 'RunSchedulePages');
+		} else {
+			$this->addHook('LazyCron::everyHour', $this, 'RunSchedulePages');
+		}
+
+		// add a hook after the $pages->save, to check wheter current page should be published or not
+		$this->pages->addHookAfter('save', $this, 'afterSave');
+	}
+
+	public function afterSave($event) {
+		$page = $event->arguments[0];
+
+		// If we are missing both publish-fields, then no need to go further
+		if(!isset($page->publish_until) || !isset($page->publish_from)) return;
+
+		$currenttime = time();
+
+		if( isset($page->event_date_end))
+		{
+			// Check if publish_until is before current time, don't allow publishing on that situation
+			if ($page->event_date_end < $currenttime && $page->event_date_end) {
+				if ($page->is(Page::statusUnpublished)) return;
+				//$this->session->error($this->_("Page saved, but not published. Change publish until setting if you want to publish this now."));
+				$page->setOutputFormatting(false);
+				$page->addStatus(Page::statusUnpublished);
+				$page->save();
+				return;
+			}
+		}
+		else
+		{
+			// Check if publish_from and _until dates doesn't make any sense and disallow publishing if so
+			if ($page->publish_from > $page->publish_until && $page->publish_from && $page->publish_until) {
+				if ($page->is(Page::statusUnpublished)) return;
+				//$this->session->error($this->_("Your publish from setting is later than publish until. Please correct your dates. We play it save and don't allow publishing."));
+				$page->setOutputFormatting(false);
+				$page->addStatus(Page::statusUnpublished);
+				$page->save();
+				return;
+			}
+
+			// Check if publish_until is before current time, don't allow publishing on that situation
+			if ($page->publish_until < $currenttime && $page->publish_until) {
+				if ($page->is(Page::statusUnpublished)) return;
+				//$this->session->error($this->_("Page saved, but not published. Change publish until setting if you want to publish this now."));
+				$page->setOutputFormatting(false);
+				$page->addStatus(Page::statusUnpublished);
+				$page->save();
+				return;
+			}
+
+
+		}
+
+		// Check if publish_from is later than current time, don't allow publishing on that situation
+		if ($page->publish_from > $currenttime) {
+			if ($page->is(Page::statusUnpublished)) return;
+			//$this->session->error($this->_("Page saved, but not published. Change publish from setting if you want to publish this now."));
+			$page->setOutputFormatting(false);
+			$page->addStatus(Page::statusUnpublished);
+			$page->save();
+			return;
+		}
+	}
+
+
+	/**
+	 * Checks for pages that need to be published or unpublished.
+	 *
+	 */
+	public function RunSchedulePages() {
+		$currenttime = time(); // Get timestamp for current date
+
+		// Select unpublished sites with a publish_from date < the current date and
+		// add them to an array.
+		$unpublished = wire("pages")->find("status=unpublished");
+		foreach($unpublished as $p) {
+			$p->setOutputFormatting(false); // Avoid date being formated.
+			// Check if current time is greater than publish_from
+			if ($p->publish_from<$currenttime || $p->event_date_end<$currenttime) {
+				// Publish pages with a publish_until date > current date (and publish_until is set)
+				if ($p->publish_until > 0 && $p->publish_until <= $currenttime) {
+					// We keep it unpublished, since publish until is set and valid
+				} else if ($p->publish_from) {
+					// If publish_from is defined, publish page
+					$p->removeStatus(Page::statusUnpublished);
+					$p->save();
+					if ($this->debug == "1") {
+						$p->setOutputFormatting(true);
+						$this->message("Published $p->url with publish_from value of $p->publish_from and publish_until value of $p->publish_until. Current timestamp is " . date('Y-m-d H:i:s',$currenttime) .".", Notice::logOnly);
+						$p->setOutputFormatting(false);
+					}
+				}
+
+
+				// Publish pages with a event_date_end date > current date (and event_date_end is set)
+				if ($p->event_date_end > 0 && $p->event_date_end <= $currenttime) {
+					// We keep it unpublished, since publish until is set and valid
+				} else if ($p->publish_from) {
+					// If publish_from is defined, publish page
+					$p->removeStatus(Page::statusUnpublished);
+					$p->save();
+					if ($this->debug == "1") {
+						$p->setOutputFormatting(true);
+						$this->message("Published $p->url with publish_from value of $p->publish_from and publish_until value of $p->publish_until. Current timestamp is " . date('Y-m-d H:i:s',$currenttime) .".", Notice::logOnly);
+						$p->setOutputFormatting(false);
+					}
+				}
+			}
+		}
+
+		// Select published sites with a publish_until date add them to an array.
+		$published = wire("pages")->find("status<" . Page::statusUnpublished . ", (publish_until>0),(event_date_end>0) ");
+		foreach($published as $p) {
+			$p->setOutputFormatting(false); // Avoid date being formated.
+			// Unpublish pages with a publish_until date <= current date
+			if($p->publish_until>0 && $p->publish_until <= $currenttime) {
+				$p->addStatus(Page::statusUnpublished);
+				$p->save();
+				if ($this->debug == "1") {
+					$p->setOutputFormatting(true);
+					$this->message("Unpublished $p->url with publish_from value of $p->publish_from and publish_until value of $p->publish_until. Current timestamp is " . date('Y-m-d H:i:s',$currenttime) .".", Notice::logOnly);
+					$p->setOutputFormatting(false);
+					}
+			}
+			if($p->event_date_end >0 && $p->event_date_end <= $currenttime) {
+				$p->addStatus(Page::statusHidden);
+				$p->save();
+				if ($this->debug == "1") {
+					$p->setOutputFormatting(true);
+					$this->message("Unpublished EVENT $p->url with publish_from value of $p->publish_from and event_date_end value of $p->event_date_end. Current timestamp is " . date('Y-m-d H:i:s',$currenttime) .".", Notice::logOnly);
+					$p->setOutputFormatting(false);
+					}
+			}
+		}
+	}
+
+	static public function getModuleConfigInputfields(array $data) {
+
+		// this is a container for fields, basically like a fieldset
+		$fields = new InputfieldWrapper();
+
+		// since this is a static function, we can't use $this->modules, so get them from the global wire() function
+		$modules = wire('modules');
+
+		$field = $modules->get("InputfieldSelect");
+		$field->name = "cronInterval";
+		$field->label =  __("Cron interval");
+		$field->description =  __("How often shall we check if any page needs to be (un)published.");
+		if (isset($data['cronInterval'])) $field->value = $data['cronInterval'];
+		$field->addOption('everyHour',  __('Every hour'));
+		$field->addOption('everyMinute',  __('Every minute'));
+		$field->addOption('every2Minutes',  __('Every 2 minutes'));
+		$field->addOption('every5Minutes',  __('Every 5 minutes'));
+		$field->addOption('every15Minutes',  __('Every 15 minutes'));
+		$field->addOption('every30Minutes',  __('Every 30 minutes'));
+		$field->addOption('every12Hours',  __('Every 12 hours'));
+		$field->addOption('everyDay',  __('Every day'));
+		$field->notes =  __("If you are not sure, choose Every hour.");
+
+		$field2 = $modules->get("InputfieldSelect");
+		$field2->name = "debug";
+		$field2->label =  __("Debug");
+		$field2->description =  __("Do you want to run this module in debug mode?");
+		if (isset($data['debug'])) $field2->value = $data['debug'];
+		$field2->addOption('0', __('No'));
+		$field2->addOption('1', __('Yes'));
+		$field2->notes =  __("If choose yes, all publish and unpublish events will be logged in the messages.txt file in /assets/logs/.");
+
+		$fields->add($field);
+		$fields->add($field2);
+
+		return $fields;
+	}
+
+	public function ___install() {
+	// Add the required fields for this module
+		$field = new Field();
+		$field->type = $this->modules->get("FieldtypeDatetime");
+		$field->name = 'publish_from';
+		$field->label =  __('Publish From Date');
+		$field->dateOutputFormat = wire('config')->dateFormat;
+		$field->dateInputFormat = wire('config')->dateFormat;
+		$field->datepicker = 1; // if you want datepicker enabled
+		$field->defaultToday = 0; // if you want dates to default to today
+		$field->save();
+
+		$field = new Field();
+		$field->type = $this->modules->get("FieldtypeDatetime");
+		$field->name = 'publish_until';
+		$field->label =  __('Publish Until Date');
+		$field->dateOutputFormat = wire('config')->dateFormat;
+		$field->dateInputFormat = wire('config')->dateFormat;
+		$field->datepicker = 1; // if you want datepicker enabled
+		$field->defaultToday = 0; // if you want dates to default to today
+		$field->save();
+	}
+
+	public function ___uninstall() {
+	// Remove the module's fields
+		$field = wire('fields')->get('publish_from');
+		if($field && $field->numFieldgroups() > 0)
+			throw new WireException("Can't uninstall because field publish_from is still being used. Please remove it from any templates.");
+		wire('fields')->delete($field);
+		$field = wire('fields')->get('publish_until');
+		if($field && $field->numFieldgroups() > 0)
+			throw new WireException("Can't uninstall because field publish_until is still being used. Please remove it from any templates.");
+		wire('fields')->delete($field);
+	}
+}

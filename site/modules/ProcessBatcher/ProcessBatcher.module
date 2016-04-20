@@ -1,0 +1,728 @@
+<?php
+
+/**
+* Batcher Module v 1.0.3
+* Batch Editing and Creating of Pages in the ProcessWire Admin Panel
+*
+* @author Stefan Wanzenried (Wanze)
+* @copyright Stefan Wanzenried
+* <http://www.everchanging.ch>
+*
+* ProcessWire 2.x
+* Copyright (C) 2011 by Ryan Cramer
+* Licensed under GNU/GPL v2, see LICENSE.TXT
+*
+* http://www.processwire.com
+*
+*/
+
+class ProcessBatcher extends Process implements Module {
+	
+	const PAGE_NAME = 'batcher';
+	
+	/**
+	 * Holds the avaiable actions in the edit-mode. Moved initialization to Constructor to make Strings translatable
+	 *
+	 */
+	protected $actions = array();	
+				
+	/**
+	 * Constructor
+	 * 
+	 * @access public
+	 * @return void
+	 */
+	public function __construct() {
+
+		$this->actions = array(
+			'publish' => $this->_('Publish'),
+			'unpublish' => $this->_('Unpublish'),
+			'hide' => $this->_('Hide'),
+			'unhide' => $this->_('Unhide'),
+			'lock' => $this->_('Lock'),
+			'unlock' => $this->_('Unlock'),
+			'trash' => $this->_('Trash'),
+			'delete' => $this->_('Delete'),
+			'changeTemplate' => $this->_('Change Template'),
+			'changeParent' => $this->_('Change Parent'),
+		);
+
+	}
+
+
+	public static function getModuleInfo() {
+		
+		//User role needs 'batcher' permission, but this was added with v 1.0.3. 
+		//Use 'page-edit' if the user updated batcher without creating the new permission manually.
+		$permission = 'batcher';
+		$p = wire('permissions')->get('batcher');
+		if (!$p->id) $permission = 'page-edit';
+		
+		return array(
+			'title' => __('Batcher', __FILE__),
+			'summary' => __('Batch Editing and Creating of Pages', __FILE__),
+			'author' => 'Wanze',
+			'version' => 103,
+			'href' => 'http://processwire.com/talk/topic/2811-processbatcher/',
+			'permanent' => false,
+			'permission' => $permission,
+		);
+
+	}
+
+
+	public function init() {
+
+		parent::init();
+		$this->modules->get('JqueryFancybox');
+		$this->modules->get('JqueryWireTabs');
+		$this->config->scripts->add($this->config->urls->ProcessBatcher . 'jquery.hotkeys.js');
+
+	}
+
+
+	public function ___install() {
+
+		parent::___install();	
+		$page = $this->pages->get('template=admin, name='.self::PAGE_NAME);
+		if (!$page->id) {
+			$page = new Page();
+			$page->template = 'admin';
+			$page->parent = $this->pages->get($this->config->adminRootPageID)->child('name=setup');
+			$page->title = 'Batcher';
+			$page->name = self::PAGE_NAME;
+			$page->process = $this;
+			$page->save();
+		}
+		
+		$permission = $this->permissions->get('batcher');
+		if (!$permission->id) {
+			$p = new Permission();
+			$p->name = 'batcher';
+			$p->title = $this->_('View Batcher Page');
+			$p->save();			
+		}		
+
+	}
+
+	
+	public function ___uninstall() {
+		
+		parent::___uninstall();
+		$page = $this->pages->get('template=admin, name='.self::PAGE_NAME);
+		if ($page->id) $page->delete();	
+
+		$permission = $this->permissions->get('batcher');
+		if ($permission->id) $permission->delete();		
+		
+	}	
+	
+	
+	
+	/**
+	 * Build the Form displaying the table with pages and the actions to execute
+	 * 
+	 * @access protected
+	 * @param mixed $wrapper InputfieldWrapper
+	 * @return void
+	 */
+	protected function buildEditFormActions(InputfieldWrapper $wrapper) {
+
+		$selector = $this->input->post->selector;
+		if ($this->input->post->filters) {
+			if (in_array('hidden', $this->input->post->filters)) $selector .= ",include=hidden";
+			if (in_array('all', $this->input->post->filters)) $selector .= ",include=all";
+		}
+
+		$pages = $this->pages->find($selector); //Pw will throw an exception here if the selector is not valid
+		if (!count($pages)) {
+			$this->message($this->_('No pages found with your selector'));
+			return;
+		}
+		
+		$results = $this->modules->get('InputfieldMarkup');
+		$results->label = $this->_('Pages');
+		$table = $this->modules->get('MarkupAdminDataTable');
+		$table->setEncodeEntities(false);
+		$table->setClass('batcher_pages');
+		$header = array(
+			'<input type="checkbox" class="toggle_all" checked="checked">',
+			$this->_('Id'),
+			$this->_('Title'),
+			$this->_('Name'),
+			$this->_('Template'),
+			$this->_('Parent'),
+			$this->_('Published'),
+			$this->_('Hidden'),
+			$this->_('Locked'),
+			$this->_('Trashed'),
+		);
+		$table->headerRow($header);
+				
+		$yes = $this->_('Yes');
+		$no  = $this->_('No');
+		
+		//Build the table
+		$nPages = 0;
+		foreach ($pages as $p) {
+			if (!$p->editable()) continue; //Only display if current user can edit
+			$published = ($p->is(Page::statusUnpublished)) ? "<span class='red'>{$no}</span>" : $yes;
+			$hidden = ($p->is(Page::statusHidden)) ? "<span class='red'>{$yes}</span>" : $no;
+			$locked = ($p->is(Page::statusLocked)) ? "<span class='red'>{$yes}</span>" : $no;
+			$trashed = ($p->is(Page::statusTrash)) ? "<span class='red'>{$yes}</span>" : $no;
+
+			//We provide the same pages checked if for some reason an error happened before
+			$checked = " checked='checked'";
+			if (count($this->input->post->pages) && $this->input->post->a == $this->_('Execute')) {
+				if (!in_array($p->id, $this->input->post->pages)) $checked = '';
+			}
+
+			$row = array(
+				"<input type='checkbox' name='pages[]' value='{$p->id}' class='toggle'{$checked}>",
+				$p->id,
+				"{$p->title} <a href='{$this->config->urls->admin}page/edit/?id={$p->id}&modal=1' class='batcher_edit batcher_small iframe'>" . $this->_('edit') . "</a>",
+				$p->name,
+				$p->template,
+				$p->parent->path,
+				$published,
+				$hidden,
+				$locked,
+				$trashed,
+			);
+			$table->row($row);
+			$nPages++;
+		}	
+		
+		if ($nPages == 0) {
+			$this->message($this->_('No pages found that are editable'));
+			return;			
+		} else {
+			$this->message($this->_(sprintf('Found %d pages', $nPages)));
+		}
+		
+		$results->attr('value', $table->render());
+		$wrapper->append($results);
+		$actions = $this->modules->get('InputfieldMarkup');
+		$actions->label = $this->_('Actions');
+		$actions->collapsed = 1;
+		$actions->description = $this->_('Choose the Action to be executed on the selected pages.');
+		$action = $this->modules->get('InputfieldSelect');
+		$action->label = $this->_('Action');
+		$action->attr('name+id', 'batcherAction');
+		
+		$action->addOptions($this->getActions());
+		$actions->append($action);
+		
+		//Need additional Inputfields for some Actions (change Parent, change Template)
+		$changeParent = $this->modules->get('InputfieldPageListSelect');
+		$changeParent->label = $this->_('Choose new Parent');
+		$changeParent->attr('name+id', 'changeParent');
+		$changeParent->attr('class', 'batcherAction');
+		$changeParent->notes = $this->_("The template of the new parent must accept the page's templates as children.");
+		$actions->append($changeParent);
+		
+		$changeTemplate = $this->modules->get('InputfieldSelect');		
+		$templates = $this->getTemplates();
+		$changeTemplate->addOptions($templates);
+		$changeTemplate->label = $this->_('Choose new Template');
+		$changeTemplate->notes = $this->_('Attention: Data in fields which are not assigned to the new template will be lost!');
+		$changeTemplate->attr('name+id', 'changeTemplate');
+		$changeTemplate->attr('class', 'batcherAction');
+		$actions->append($changeTemplate);
+		
+		$button = $this->modules->get('InputfieldSubmit');
+		$button->attr('value', $this->_('Execute'));
+		$button->attr('name', 'a');
+		$actions->append($button);
+		$wrapper->append($actions);
+		
+	}
+	
+	
+	
+	/**
+	 * Returns actions after checking permissions for the current user
+	 * 
+	 * @access protected
+	 * @return $actions Array of Actions
+	 */
+	protected function getActions() {
+		
+		$actions = $this->actions;
+		if (!$this->user->hasPermission('page-delete')) unset($actions['delete']);
+		if (!$this->user->hasPermission('page-move')) unset($actions['changeParent']);
+		if (!$this->user->hasPermission('page-template')) unset($actions['changeTemplate']);
+		if (!$this->user->hasPermission('page-lock')) {
+			unset($actions['lock']);	
+			unset($actions['unlock']);
+		} 
+		return $actions;	
+		
+	}
+	
+	
+	/**
+	 * Return templates excluding system templates
+	 * 
+	 * @access protected
+	 * @return void
+	 */
+	protected function getTemplates() {
+
+		$templates = array();
+		foreach ($this->templates as $template) {
+			if($template->flags & Template::flagSystem) continue;
+			$label = $template->label ? $template->label : $template->name;
+			$templates[$template->name] = $label;
+		}
+		return $templates;
+		
+	}
+	
+	
+	/**
+	 * Build the Batch-Edit form
+	 * 
+	 * @access protected
+	 * @param InputfieldWrapper $wrapper
+	 * @return void
+	 */
+	protected function buildEditForm(InputfieldWrapper $wrapper) {
+		
+		//Search for pages
+		$field = $this->modules->get('InputfieldText');
+		$field->label = $this->_('Search');
+		$field->description = $this->_('Enter a selector to search your pages.');
+		$field->columnWidth = 75;
+		$field->attr('name', 'selector');
+		if ($this->input->post->selector) {
+			$field->attr('value', $this->input->post->selector); //Pw takes care of entity encoding 
+		}
+		$filters = $this->modules->get('InputfieldCheckboxes');
+		$filters->label = $this->_('Filters');
+		$filters->columnWidth = 25;
+		$filters->attr('name', 'filters');
+		$filters->addOption('hidden', $this->_('Include hidden'));
+		$filters->addOption('all', $this->_('Include all'));
+		if ($this->input->post->filters) {
+			$value = array();
+			if (in_array('hidden', $this->input->post->filters)) $value[] = 'hidden';
+			if (in_array('all', $this->input->post->filters)) $value[] = 'all';
+			$filters->attr('value', $value);
+		}
+		$button = $this->modules->get('InputfieldSubmit');
+		$button->attr('value', $this->_('Search'));
+		$button->attr('name', 'a');
+		$button->attr('id', 'batcher_search');
+		$wrapper->append($field);
+		$wrapper->append($filters);
+		$wrapper->append($button);
+		
+		//Search executed? Choose pages and actions
+		if ($this->input->post->a == $this->_('Search') || $this->input->post->a == $this->_('Execute')) {
+			$this->buildEditFormActions($wrapper);
+		}		
+		
+	}
+	
+	
+	/**
+	 * Build the Batch-Create form
+	 * 
+	 * @access protected
+	 * @param InputfieldWrapper $wrapper
+	 * @return void
+	 */
+	protected function buildCreateForm(InputfieldWrapper $wrapper) {
+		
+		$parent = $this->modules->get('InputfieldPageListSelect');
+		$parent->label = $this->_('Parent');
+		$parent->attr('name', 'parent');
+		if ($this->input->post->parent) $parent->attr('value', $this->input->post->parent);
+		$addPage = "<p><a class='batcher_add' href='#'>" . $this->_('add Page') . "</a><span class='batcher_small'> (ctrl+n)</span></p>";
+		$table = $this->modules->get('MarkupAdminDataTable');
+		$table->setEncodeEntities(false);
+		$table->setSortable(false);
+		$table->setClass('batcher_create');
+		$headerRow = array(
+			$this->_('Title'),
+			$this->_('Name'),
+			$this->_('Template'),
+			$this->_('Published'),
+			$this->_('Hidden'),
+			$this->_('Locked'),
+			"&nbsp;",
+		);
+		$table->headerRow($headerRow);
+		$title = $this->modules->get('InputfieldText');
+		$title->attr('name', 'title[]');
+		$name = $this->modules->get('InputfieldText');
+		$name->attr('name', 'name[]');
+		$templates = $this->modules->get('InputfieldSelect');
+		$templates->addOptions($this->getTemplates());
+		$templates->attr('name', 'template[]');
+		$row = array(
+			$title->render(),
+			$name->render(),
+			$templates->render(),
+			"<input type='checkbox' name='published[]' value='1'>",
+			"<input type='checkbox' name='hidden[]' value='1'>",
+			"<input type='checkbox' name='locked[]' value='1'>",
+			"<a class='remove_page' href='#'>" . $this->_('remove') . "</a>",
+		);
+		
+		//If there were any errors, we fill up the table with the data sent
+		if (!count($this->input->post->title)) {
+			$table->row($row);		
+		} else {
+			/*Note that we use standard php $_POST array here, because only pages that were not created 
+			  are stil in the title array. The pages created are removed with unset($_POST['title']['key'])*/
+			foreach ($_POST['title'] as $k => $v) {
+				$pTitle = $this->input->post->title[$k];
+				$pName = $this->input->post->name[$k];
+				$pTemplate = $this->input->post->template[$k];
+				$published = ($this->input->post->published[$k]) ? " checked" : "";
+				$hidden = ($this->input->post->hidden[$k]) ? " checked" : "";
+				$locked = ($this->input->post->locked[$k]) ? " checked" : "";
+				$row = array(
+					$title->attr('value', $pTitle)->render(),
+					$name->attr('value', $pName)->render(),
+					$templates->attr('value', $pTemplate)->render(),					
+					"<input type='checkbox' name='published[]' value='1'{$published}>",
+					"<input type='checkbox' name='hidden[]' value='1'{$hidden}>",
+					"<input type='checkbox' name='locked[]' value='1'{$locked}>",
+					"<a class='remove_page' href='#'>" . $this->_('remove') . "</a>",
+				);
+				$table->row($row);				
+			}
+		}
+		$pages = $this->modules->get('InputfieldMarkup');
+		$pages->label = $this->_('Pages');
+		$pages->attr('value', $addPage . $table->render());
+		$button = $this->modules->get('InputfieldSubmit');
+		$button->attr('name', 'a');
+		$button->attr('value', $this->_('Create Pages'));
+		$button->attr('id', 'create_pages');
+		$wrapper->append($parent);
+		$wrapper->append($pages);
+		$wrapper->append($button);
+
+	}
+	
+	/**
+	 * Execute Batcher
+	 * 
+	 * @access public
+	 * @return void
+	 */
+	public function ___execute() {
+		
+		//Check POST requests for editing or creating pages
+		if ($this->input->post->a == $this->_('Execute')) {
+			$this->executeEdit();
+		} else if ($this->input->post->a == $this->_('Create Pages')) {
+			$this->executeCreate();
+		}
+
+		/*
+		Build Batcher-interface		
+		Check for batcher create and edit permissions. If found, the user need those fore editing/creating
+		If no permissions are found, we allow both by default*/
+		$create = true;
+		$edit = true;
+		if ($this->permissions->get('batcher-edit')->id && !$this->user->hasPermission('batcher-edit')) $edit = false;
+		if ($this->permissions->get('batcher-create')->id && !$this->user->hasPermission('batcher-create')) $create = false;
+				
+		$form = $this->modules->get('InputfieldForm');
+		$form->attr('id', 'batcher_form');
+		if ($edit) {
+			$editWrapper = new InputfieldWrapper();
+			$editWrapper->attr('title', $this->_('Edit'));
+			$this->buildEditForm($editWrapper);
+			$form->append($editWrapper);
+		}
+		if ($create) {
+			$createWrapper = new InputfieldWrapper();
+			$createWrapper->attr('title', $this->_('Create'));
+			$this->buildCreateForm($createWrapper);
+			$form->append($createWrapper);					
+		}
+
+		return $form->render();
+						
+	}
+	
+	
+	/**
+	 * Execute batch-creating of pages
+	 * 
+	 * @access protected
+	 * @return void
+	 */
+	protected function executeCreate() {
+		
+		$parentId = (int) $this->input->post->parent;
+						
+		if (!count($this->input->post->title)) {
+			$this->error($this->_('No page titles found'));
+			return;
+		}
+		if (!$parentId) {
+			$this->error($this->_('You must choose a parent'));
+			return;
+		}
+
+		$parent = $this->pages->get($parentId);
+		
+		//Does the parent allow children?
+		if ($parent->template->noChildren) {
+			$this->error($this->_('The selected Parent does not allow children'));
+			return;
+		}
+		
+		//Does the user have permission to add children?
+		if (!$this->user->isSuperuser()) {
+			$add = false;
+			foreach ($parent->template->addRoles as $role) {
+				if ($this->user->hasRole($role)) {
+					$add = true;
+					break;
+				}
+			}
+			if (!$add) {
+				$this->error($this->_("You don't have the permission to add children under the selected Parent"));
+			}
+		}		
+		
+		$allowedChildTemplates = $parent->template->childTemplates; //Allowed templates for children, array of template-ID's		
+		
+		/*This array holds templates that don't allow creating the page due to access or Template-family restrictions
+		  It serves as cache and to prevents displaying the same error message multiple times*/
+		$failed = array(
+			'childTemplates' => array(),
+			'parentTemplates' => array(),
+			'noParents' => array(),
+			'createRoles' => array(),
+		);
+		$count = count($this->input->post->title);
+		$n = 0;
+		for ($i=0; $i<$count; $i++) {
+			$title = $this->input->post->title[$i];
+			if (!$title) continue;
+			$template = $this->input->post->template[$i];
+			if (!$template) continue;
+			$template = $this->templates->get($template);
+
+			//Template Family restriction: Can current template have parents?
+			if (in_array($template->id, $failed['noParents'])) continue;
+			if ($template->noParents) {
+				$this->error($this->_(sprintf('Template "%s" does not allow to have parents', $template->name)));
+				$failed['noParents'][] = $template->id;
+				continue;
+			}
+
+			//Template Family restrictions: Current Template allowed under Parents template?
+			if (in_array($template->id, $failed['childTemplates'])) continue;
+			if (count($allowedChildTemplates) && !in_array($template->id, $allowedChildTemplates)) {
+				$this->error($this->_(sprintf('Template "%s" not allowed under the selected Parent', $template->name)));
+				$failed['childTemplates'][] = $template->id;
+				continue;	
+			}
+			
+			//Parent template allowed for pages template?
+			if (in_array($template->id, $failed['parentTemplates'])) continue;
+			$parentTemplates = $template->parentTemplates;	
+			if (count($parentTemplates) && !in_array($parent->template->id, $parentTemplates)) {
+				$this->error($this->_(sprintf('Template "%s" does not allow the to have the selected Parent (Parent-Template restriction)', $template->name)));
+				$failed['parentTemplates'][] = $template->id;
+				continue;
+			}
+			
+			//Can the current user create pages with the selected template?
+			if (!$this->user->isSuperuser()) {
+				if (in_array($template->id, $failed['createRoles'])) continue;
+				$create = false;
+				if (count($template->createRoles)) {
+					foreach ($template->createRoles as $role) {
+						if ($this->user->hasRole($role)) {
+							$create = true;
+							break;
+						}
+					}
+				}
+				if (!$create) {
+					$this->error($this->_(sprintf('You are not allowed to create pages with template "%s"', $template->name)));
+					$failed['createRoles'][] = $template->id;
+					continue;
+				}								
+			}
+			
+			$name = $this->sanitizer->pageName($this->input->post->name[$i]);
+			$published = $this->input->post->published[$i];
+			$hidden = $this->input->post->hidden[$i];
+			$locked = $this->input->post->locked[$i];
+			
+			//If we made it here, we're good to go -> create the page
+			$p = new Page();
+			$p->parent = $parent;
+			$p->template = $template;
+			$p->title = $title;
+			if ($name) $p->name = $name;
+			if (!$published) $p->addStatus(Page::statusUnpublished);
+			if ($hidden) $p->addStatus(Page::statusHidden);
+			if ($locked) $p->addStatus(Page::statusLocked);
+			$p->save();
+			//Unset the created pages from the POST-title array. The pages still in there are listed again to the user
+			unset($_POST['title'][$i]);
+			$n++;
+		}
+		
+		//Display messages
+		if ($n != $count) {
+			$this->error($this->_('Some Pages were not created, you can see them below. Make sure they have a title and a valid template'));
+			if ($n) $this->message($this->_(sprintf('Created %d pages', $n)));
+		} else {
+			$this->session->message($this->_(sprintf('Created %d pages', $n)));
+			$this->session->redirect('./');
+		}
+					
+	}
+	
+	
+	/**
+	 * Execute batch-editing of pages
+	 *
+	 * @access protected
+	 * @return void
+	 */
+	protected function executeEdit() {
+		
+		//Error and security checking
+		$action = $this->input->post->batcherAction;
+		$actions = $this->getActions();
+		if (!in_array($action, array_keys($actions))) {
+			$this->error($this->_('You must choose a valid action'));
+			return;
+		}
+		if (!count($this->input->post->pages)) {
+			$this->error($this->_('No pages selected'));
+			return;
+		}
+		//changeParent and changeTemplate need new parent/template
+		if ($this->input->post->batcherAction == 'changeParent' && !$this->input->post->changeParent) {
+			$this->error('You must select a new parent');
+			return;
+		}
+		if ($this->input->post->batcherAction == 'changeTemplate' && !$this->input->post->changeTemplate) {
+			$this->error('You must select a new template');
+			return;
+		}	
+		
+		//If we made it here -> execute modifications		
+		$pageIds = implode('|', $this->input->post->pages); 
+		$pages = $this->pages->find("id={$pageIds}, include=all");
+		$count = 0;
+		$message = '';
+		
+		switch ($action) {
+			case 'publish' :
+				foreach ($pages as $p) {
+					$p->of(false);
+					$p->removeStatus(Page::statusUnpublished);
+					$p->save();
+					$count++;
+				}
+				$message = $this->_(sprintf("Published %d pages", $count));
+			break;
+			case 'unpublish' :
+				foreach ($pages as $p) {
+					$p->of(false);
+					$p->addStatus(Page::statusUnpublished);
+					$p->save();
+					$count++;
+				}
+				$message = $this->_(sprintf("Unpublished %d pages", $count));
+			break;
+			case 'hide' :
+				foreach ($pages as $p) {
+					$p->of(false);
+					$p->addStatus(Page::statusHidden);
+					$p->save();
+					$count++;
+				}
+				$message = $this->_(sprintf("Added status hidden to %d pages", $count));
+			break;
+			case 'unhide' :
+				foreach ($pages as $p) {
+					$p->of(false);
+					$p->removeStatus(Page::statusHidden);
+					$p->save();
+					$count++;
+				}
+				$message = $this->_(sprintf("Removed status hidden from %d pages", $count));
+			break;
+			case 'lock' :
+				foreach ($pages as $p) {
+					$p->of(false);
+					$p->addStatus(Page::statusLocked);
+					$p->save();
+					$count++;
+				}
+				$message = $this->_(sprintf("Locked %d pages", $count));			
+			break;
+			case 'unlock' :
+				foreach ($pages as $p) {
+					$p->of(false);
+					$p->removeStatus(Page::statusLocked);
+					$p->save();
+					$count++;
+				}
+				$message = $this->_(sprintf("Unlocked %d pages", $count));
+			break;
+			case 'trash' :
+				foreach ($pages as $p) {
+					$p->of(false);
+					$p->trash();
+					$count++;
+				}
+				$message = $this->_(sprintf("Moved %d pages to the trash", $count));
+			break;
+			case 'delete' :
+				foreach ($pages as $p) {
+					$p->of(false);
+					$p->delete();
+					$count++;
+				}
+				$message = $this->_(sprintf("Deleted %d pages", $count));
+			break;
+			case 'changeTemplate' :
+				$template = $this->input->post->changeTemplate;
+				foreach ($pages as $p) {
+					$p->of(false);
+					$p->template = $template;
+					$p->save();
+					$count++;
+				}
+				$message = $this->_(sprintf("Changed template of %d pages", $count));
+			break;
+			case 'changeParent' :
+				$parent = $this->input->post->changeParent;
+				foreach ($pages as $p) {
+					$p->of(false);
+					$p->parent = $parent;
+					$p->save();
+					$count++;
+				}
+				$message = $this->_(sprintf("Changed parent of %d pages", $count));
+			break;
+		}
+		
+		//Finished executing the action(s). We do a redirect and display messages with session
+		$this->session->message($message);
+		$this->session->redirect('./');
+		
+	}
+	
+}
+
+?>

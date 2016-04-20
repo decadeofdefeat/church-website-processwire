@@ -1,0 +1,31 @@
+2016-04-18 16:18:41	admin	http://church.markgoldsmith.me/admin/setup/template/removeFields	Deleted field "social_hashtag" data in 0 row(s) from 0 page(s). [page-by-page]
+2016-04-18 16:20:24	admin	http://church.markgoldsmith.me/admin/setup/template/removeFields	Deleted field "series_date_start" data in 0 row(s) from 0 page(s). [page-by-page]
+2016-04-18 16:20:24	admin	http://church.markgoldsmith.me/admin/setup/template/removeFields	Deleted field "series_date_end" data in 0 row(s) from 0 page(s). [page-by-page]
+2016-04-18 16:20:24	admin	http://church.markgoldsmith.me/admin/setup/template/removeFields	Deleted field "body" data in 0 row(s) from 0 page(s). [page-by-page]
+2016-04-18 16:20:24	admin	http://church.markgoldsmith.me/admin/setup/template/removeFields	Deleted field "series_standalone_year" data in 0 row(s) from 0 page(s). [page-by-page]
+2016-04-18 16:20:24	admin	http://church.markgoldsmith.me/admin/setup/template/removeFields	Deleted field "series_wide_graphic" data in 0 row(s) from 0 page(s). [page-by-page]
+2016-04-18 16:20:24	admin	http://church.markgoldsmith.me/admin/setup/template/removeFields	Deleted field "series_square_graphic" data in 0 row(s) from 0 page(s). [page-by-page]
+2016-04-18 16:20:24	admin	http://church.markgoldsmith.me/admin/setup/template/removeFields	Deleted field "series_banner_graphic" data in 0 row(s) from 0 page(s). [page-by-page]
+2016-04-18 16:20:24	admin	http://church.markgoldsmith.me/admin/setup/template/removeFields	Deleted field "header_title" data in 0 row(s) from 0 page(s). [page-by-page]
+2016-04-18 16:20:24	admin	http://church.markgoldsmith.me/admin/setup/template/removeFields	Deleted field "header_description" data in 0 row(s) from 0 page(s). [page-by-page]
+2016-04-18 16:20:24	admin	http://church.markgoldsmith.me/admin/setup/template/removeFields	Deleted field "header_image" data in 0 row(s) from 0 page(s). [page-by-page]
+2016-04-18 16:20:24	admin	http://church.markgoldsmith.me/admin/setup/template/removeFields	Deleted field "thumbnail" data in 0 row(s) from 0 page(s). [page-by-page]
+2016-04-18 16:20:24	admin	http://church.markgoldsmith.me/admin/setup/template/removeFields	Deleted field "homepage_background" data in 0 row(s) from 0 page(s). [page-by-page]
+2016-04-18 16:20:24	admin	http://church.markgoldsmith.me/admin/setup/template/removeFields	Deleted field "homepage_transparent_logo" data in 0 row(s) from 0 page(s). [page-by-page]
+2016-04-18 16:20:24	admin	http://church.markgoldsmith.me/admin/setup/template/removeFields	Deleted field "homepage_text_color" data in 0 row(s) from 0 page(s). [page-by-page]
+2016-04-18 16:20:24	admin	http://church.markgoldsmith.me/admin/setup/template/removeFields	Deleted field "tags" data in 0 row(s) from 0 page(s). [page-by-page]
+2016-04-18 16:43:12	admin	http://church.markgoldsmith.me/admin/setup/template/removeFields	Deleted field "media_speaker" data in 0 row(s) from 0 page(s). [page-by-page]
+2016-04-18 16:43:12	admin	http://church.markgoldsmith.me/admin/setup/template/removeFields	Deleted field "tags" data in 0 row(s) from 0 page(s). [page-by-page]
+2016-04-18 16:45:14	admin	http://church.markgoldsmith.me/admin/setup/template/removeFields	Deleted field "media_video_mp4_low" data in 0 row(s) from 0 page(s). [page-by-page]
+2016-04-18 16:45:14	admin	http://church.markgoldsmith.me/admin/setup/template/removeFields	Deleted field "media_video_mp4_hd" data in 0 row(s) from 0 page(s). [page-by-page]
+2016-04-18 16:54:19	admin	http://church.markgoldsmith.me/admin/setup/template/removeFields	Deleted field "media_thumbnail" data in 0 row(s) from 0 page(s). [page-by-page]
+2016-04-19 13:22:19	admin	http://church.markgoldsmith.me/admin/page/sort/	Updated sort for 5 pages
+2016-04-19 13:29:34	admin	http://church.markgoldsmith.me/admin/setup/template/removeFields	Deleted field "ical_file" data in 0 row(s) from 0 page(s). [page-by-page]
+2016-04-19 16:12:10	admin	http://church.markgoldsmith.me/admin/setup/template/removeFields	Deleted field "header_title" data in 0 row(s) from 0 page(s). [page-by-page]
+2016-04-20 13:50:33	admin	http://church.markgoldsmith.me/admin/page/sort/	Updated sort for 12 pages
+2016-04-20 13:50:40	admin	http://church.markgoldsmith.me/admin/page/sort/	Updated sort for 5 pages
+2016-04-20 13:50:44	admin	http://church.markgoldsmith.me/admin/page/sort/	Updated sort for 5 pages
+2016-04-20 13:50:50	admin	http://church.markgoldsmith.me/admin/page/sort/	Updated sort for 3 pages
+2016-04-20 13:50:55	admin	http://church.markgoldsmith.me/admin/page/sort/	Updated sort for 3 pages
+2016-04-20 14:21:34	admin	http://church.markgoldsmith.me/admin/setup/template/removeFields	Deleted field "thumbnail" data in 0 row(s) from 0 page(s). [page-by-page]
+2016-04-20 14:21:50	admin	http://church.markgoldsmith.me/admin/page/sort/	Updated sort for 12 pages

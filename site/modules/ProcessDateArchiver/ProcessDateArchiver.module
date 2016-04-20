@@ -1,0 +1,847 @@
+<?php
+
+/**
+ * ProcessWire Process module to automatically archives pages based on a Datetime field.
+ *
+ * ProcessWire 2.x
+ * Copyright (C) 2013 by Niek Bosch
+ * Licensed under GNU/GPL v2, see LICENSE.TXT
+ *
+ * http://www.processwire.com
+ * http://www.demediafabriek.nl
+ *
+ */
+
+class ProcessDateArchiver extends Process implements Module {
+
+	/**
+	 * getModuleInfo is a module required by all modules to tell ProcessWire about them
+	 *
+	 * @return array
+	 *
+	 */
+	public static function getModuleInfo() {
+		return array(
+			'title' => 'Date Archiver',
+			'version' => 100,
+			'summary' => 'Automatically archives pages based on a Datetime field.',
+			'singular' => true,
+			'autoload' => true
+		);
+	}
+
+	/**
+	 * Name used for the page created in the admin
+	 *
+	 */
+	const adminPageName = 'date-archiver';
+
+	/**
+	 * Database table name
+	 *
+	 */
+	const tableName = 'process_date_archiver';
+
+	/**
+	 * List of Datetime Fieldtypes that we support
+	 *
+	 */
+	protected $fieldtypes = array(
+		'FieldtypeDatetime'
+	);
+
+	/**
+	 * Page parent before a page is moved to trash
+	 *
+	 */
+	protected $beforeTrashPageParent = null;
+
+	/**
+	 * Initialize the module.
+	 *
+	 */
+	public function init() {
+
+		$this->pages->addHookBefore('save', $this, 'hookBeforeSavePage');
+		$this->pages->addHookAfter('save', $this, 'hookAfterSavePage');
+
+		$this->pages->addHookBefore('added', $this, 'hookBeforeAddedPage');
+		$this->pages->addHookAfter('added', $this, 'hookAfterAddedPage');
+
+		$this->pages->addHookBefore('trash', $this, 'hookBeforeTrashPage');
+		$this->pages->addHookAfter('trash', $this, 'hookAfterTrashPage');
+
+		parent::init();
+	}
+
+	/**
+	 * Archives the page before a page is saved.
+	 *
+	 */
+	public function hookBeforeSavePage(HookEvent $event) {
+
+		$page = $event->arguments[0];
+		$this->archivePage($page);
+	}
+
+	/**
+	 * Deletes empty date archives after a page has been saved.
+	 *
+	 */
+	public function hookAfterSavePage(HookEvent $event) {
+
+		$page = $event->arguments[0];
+		$this->deleteEmptyDateArchives($page, $page->parent);
+	}
+
+	/**
+	 * Archives the page before a page is added.
+	 *
+	 */
+	public function hookBeforeAddedPage(HookEvent $event) {
+
+		$page = $event->arguments[0];
+		$this->archivePage($page);
+	}
+
+	/**
+	 * Deletes empty date archives after a page has been added.
+	 *
+	 */
+	public function hookAfterAddedPage(HookEvent $event) {
+
+		$page = $event->arguments[0];
+		$this->deleteEmptyDateArchives($page, $page->parent);
+	}
+
+	/**
+	 * Remembers the parent page before a page has been trashed.
+	 * This is needed because we cannot determine the original
+	 * parent after a page has been trashed.
+	 *
+	 */
+	public function hookBeforeTrashPage(HookEvent $event) {
+
+		$page = $event->arguments[0];
+		$this->beforeTrashPageParent = $page->parent;
+	}
+
+	/**
+	 * Deletes empty date archives after a page has been trashed.
+	 *
+	 */
+	public function hookAfterTrashPage(HookEvent $event) {
+
+		$page = $event->arguments[0];
+		$this->deleteEmptyDateArchives($page, $this->beforeTrashPageParent);
+	}
+
+	/**
+	 * Archives a specific page.
+	 *
+	 * @param Page $page The page to archive.
+	 * @return bool True on success.
+	 *
+	 */
+	public function archivePage(Page $page) {
+
+		// Try to find a matching archiving rule
+		$rule = ProcessDateArchiverRule::getRuleByTemplateID($page->template->id);
+
+		// Check if the rule is still valid
+		if ($rule->isValid())
+		{
+			// Get fields and templates
+			$dateField = $rule->getDateField();
+			$dayTemplate = $rule->getDayArchiveTemplate();
+			$monthTemplate = $rule->getMonthArchiveTemplate();
+			$yearTemplate = $rule->getYearArchiveTemplate();
+
+			// Try to get archiving date, else use current date
+			$date = (int) $page->getUnformatted($dateField->name);
+			$date = ($date) ? $date : time();
+			$day = date('d', $date);
+			$month = date('m', $date);
+			$year = date('Y', $date);
+
+			// Find first parent that is not a date archive
+			$archivePage = $page->parent;
+
+			while ($archivePage->template === $yearTemplate ||
+					$archivePage->template === $monthTemplate ||
+					$archivePage->template === $dayTemplate) {
+				$archivePage = $archivePage->parent;
+			}
+
+			// Find existing year archive or create if not exists
+			if ($yearTemplate) {
+
+				$yearPage = $archivePage->child('name=' . $year . ',template=' . $yearTemplate->name);
+
+				if ( ! $yearPage->id) {
+					$yearPage = new Page();
+					$yearPage->template = $yearTemplate;
+					$yearPage->parent = $archivePage;
+					$yearPage->title = $year;
+					$yearPage->save();
+				}
+			}
+
+			// Find existing month archive or create if not exists
+			if ($monthTemplate) {
+
+				$monthPage = $yearPage->child('name=' . $month . ',template=' . $monthTemplate->name);
+
+				if ( ! $monthPage->id) {
+					$monthPage = new Page();
+					$monthPage->template = $monthTemplate;
+					$monthPage->parent = $yearPage;
+					$monthPage->title = $month;
+					$monthPage->save();
+				}
+			}
+
+			// Find existing day archive or create if not exists
+			if ($dayTemplate) {
+
+				$dayPage = $monthPage->child('name=' . $day . ',template=' . $dayTemplate->name);
+
+				if ( ! $dayPage->id) {
+					$dayPage = new Page();
+					$dayPage->template = $monthTemplate;
+					$dayPage->parent = $monthPage;
+					$dayPage->title = $day;
+					$dayPage->save();
+				}
+			}
+
+			// Assign new parent if needed
+			if ($dayTemplate && $dayPage !== $page->parent) {
+				$page->parent = $dayPage;
+			} else if ($monthTemplate && $monthTemplate !== $page->parent) {
+				$page->parent = $monthPage;
+			} else if ($yearTemplate && $yearTemplate !== $page->parent) {
+				$page->parent = $yearPage;
+			}
+
+			return true;
+		}
+
+		return false;
+	}
+
+	/**
+	 * Deletes empty date archives.
+	 *
+	 * @param Page $page The page that is moved or trashed.
+	 * @param Page $parent The (old) parent of the page.
+	 *
+	 */
+	public function deleteEmptyDateArchives(Page $page, Page $parent) {
+
+		// Try to find a matching archiving rule
+		$rule = ProcessDateArchiverRule::getRuleByTemplateID($page->template->id);
+
+		// Check if the rule is still valid
+		if ($rule->isValid())
+		{
+			// Get fields and templates
+			$dateField = $rule->getDateField();
+			$dayTemplate = $rule->getDayArchiveTemplate();
+			$monthTemplate = $rule->getMonthArchiveTemplate();
+			$yearTemplate = $rule->getYearArchiveTemplate();
+
+			// Find first parent that is not a date archive
+			$archivePage = $parent;
+
+			while ($archivePage->template === $yearTemplate ||
+					$archivePage->template === $monthTemplate ||
+					$archivePage->template === $dayTemplate) {
+				$archivePage = $archivePage->parent;
+			}
+
+			// First delete all empty day archives
+			if ($dayTemplate) {
+				foreach ($archivePage->find('template=' . $dayTemplate->name . ',numChildren=0') as $dayPage) {
+					$dayPage->delete();
+				}
+			}
+
+			// Then delete all empty month archives
+			if ($monthTemplate) {
+				foreach ($archivePage->find('template=' . $monthTemplate->name . ',numChildren=0') as $monthPage) {
+					$monthPage->delete();
+				}
+			}
+
+			// And then delete all empty year archives
+			if ($yearTemplate) {
+				foreach ($archivePage->find('template=' . $yearTemplate->name . ',numChildren=0') as $yearPage) {
+					$yearPage->delete();
+				}
+			}
+		}
+	}
+
+	/**
+	 * Executed when root url for module is accessed.
+	 *
+	 */
+	public function ___execute() {
+
+		// Setup admin data table for rules
+		$table = $this->modules->get('MarkupAdminDataTable');
+		$table->setEncodeEntities(false);
+		$table->setClass('date-archiver-rules');
+		$table->headerRow(array(
+			__('Template'),
+			__('Date field'),
+			__('Year archive template'),
+			__('Month archive template'),
+			__('Day archive template'),
+			''
+		));
+
+		$rules = ProcessDateArchiverRule::getAllRules();
+
+		foreach ($rules as $rule) {
+
+			// Get fields and templates
+			$dateField = $rule->getDateField();
+			$itemTemplate = $rule->getItemTemplate();
+			$yearTemplate = $rule->getYearArchiveTemplate();
+			$monthTemplate = $rule->getMonthArchiveTemplate();
+			$dayTemplate = $rule->getDayArchiveTemplate();
+
+			$data = array();
+
+			// Add item template as edit link
+			$title = ($itemTemplate) ? $itemTemplate->name : $rule->template_id . ' <em>(' . __('nonexistent') . ')</em>';
+			$data[] = '<a href="./edit?id=' . $rule->id . '">' . $title . '</a>';
+
+			// Add date field
+			$data[] = ($dateField) ? $dateField->name : $rule->date_field_id . ' <em>(' . __('nonexistent') . ')</em>';
+
+			// Add year template
+			$data[] = ($yearTemplate) ? $yearTemplate->name : $rule->year_archive_template_id . ' <em>(' . __('nonexistent') . ')</em>';
+
+			// Add month template
+			if ($monthTemplate === null) {
+				$data[] = '';
+			} else if ($monthTemplate === false) {
+				$data[] = $rule->month_archive_template_id . ' <em>(' . __('nonexistent') . ')</em>';
+			} else {
+				$data[] = $monthTemplate->name;
+			}
+
+			// Add day template
+			if ($dayTemplate === null) {
+				$data[] = '';
+			} else if ($dayTemplate === false) {
+				$data[] = $rule->day_archive_template_id . ' <em>(' . __('nonexistent') . ')</em>';
+			} else {
+				$data[] = $dayTemplate->name;
+			}
+
+			// Link for removing individual rule
+			$data[] = '<a href="./delete?id=' . $rule->id . '" class="remove">' . __('delete') . '</a>';
+
+			// Add new table row
+			$table->row($data);
+		}
+
+		$button = $this->modules->get('InputfieldButton');
+		$button->href = './add';
+		$button->value = $this->_('Add New Archiving Rule');
+
+		return $table->render() . $button->render();
+	}
+
+	/**
+	 * Executed when ./add url for module is accessed.
+	 *
+	 */
+	public function ___executeAdd() {
+
+		$info = $this->getModuleInfo();
+		$this->setFuel('processHeadline', $this->_('Add Archiving Rule'));
+		$this->fuel('breadcrumbs')->add(new Breadcrumb('./', $info['title']));
+		return $this->renderRuleForm();
+	}
+
+	/**
+	 * Executed when ./edit url for module is accessed.
+	 *
+	 */
+	public function ___executeEdit() {
+
+		$info = $this->getModuleInfo();
+		$this->setFuel('processHeadline', $this->_('Edit Archiving Rule'));
+		$this->fuel('breadcrumbs')->add(new Breadcrumb('./', $info['title']));
+		return $this->renderRuleForm();
+	}
+
+	/**
+	 * Render and process rule form.
+	 *
+	 */
+	public function renderRuleForm() {
+
+		if ($this->input->get->id) {
+			$rule = ProcessDateArchiverRule::getRuleByID($this->input->get->id);
+		} else {
+			$rule = new ProcessDateArchiverRule();
+		}
+
+		if ($this->input->post->submit) {
+			$rule->setData($this->input->post);
+		}
+
+		// Create form
+		$form = $this->modules->get('InputfieldForm');
+		$form->action = '';
+		$form->method = 'post';
+
+		// Create item template select field
+		$field = $this->modules->get('InputfieldSelect');
+		$field->name = 'item_template_id';
+		$field->label = $this->_('Template');
+		$field->required = true;
+		$field->attr('value', $rule->item_template_id);
+		$field->addOption('');
+
+		foreach ($this->templates as $template) {
+			$field->addOption($template->id, $template->name);
+		}
+
+		$form->add($field);
+
+		$field = $this->modules->get('InputfieldSelect');
+		$field->name = 'date_field_id';
+		$field->label = $this->_('The date field to archive on');
+		$field->required = true;
+		$field->attr('value', $rule->date_field_id);
+		$field->addOption('');
+
+		foreach ($this->fields as $inputField) {
+			foreach ($this->fieldtypes as $fieldtype) {
+				if ($inputField->type instanceof $fieldtype) {
+					$field->addOption($inputField->id, $inputField->name);
+					break;
+				}
+			}
+		}
+
+		$form->add($field);
+
+		// Create year archive template select field
+		$field = $this->modules->get('InputfieldSelect');
+		$field->name = 'year_archive_template_id';
+		$field->label = $this->_('Year archive template');
+		$field->required = true;
+		$field->attr('value', $rule->year_archive_template_id);
+		$field->addOption('');
+
+		foreach ($this->templates as $template) {
+			$field->addOption($template->id, $template->name);
+		}
+
+		$form->add($field);
+
+		// Create month archive template select field
+		$field = $this->modules->get('InputfieldSelect');
+		$field->name = 'month_archive_template_id';
+		$field->label = $this->_('Month archive template');
+		$field->description = $this->_('Leave blank if you don\'t want to archive by month.');
+		$field->attr('value', $rule->month_archive_template_id);
+		$field->addOption('');
+
+		foreach ($this->templates as $template) {
+			$field->addOption($template->id, $template->name);
+		}
+
+		$form->add($field);
+
+		// Create day archive template select field
+		$field = $this->modules->get('InputfieldSelect');
+		$field->name = 'day_archive_template_id';
+		$field->label = $this->_('Day archive template');
+		$field->description = $this->_('Leave blank if you don\'t want to archive by day.');
+		$field->attr('value', $rule->day_archive_template_id);
+		$field->addOption('');
+
+		foreach ($this->templates as $template) {
+			$field->addOption($template->id, $template->name);
+		}
+
+		$form->add($field);
+
+		// Create submit button
+		$submit = $this->modules->get('InputfieldSubmit');
+		$submit->attr('value', $this->_($rule->id ? $this->_('Save') : $this->_('Add Rule')));
+		$submit->attr('name', 'submit');
+		$form->append($submit);
+
+		if ($this->input->post->submit) {
+
+			$form->processInput($this->input->post);
+
+			if ( ! $form->getErrors() && $rule->save()) {
+
+				$this->message($this->_('Saved Archiving Rule'));
+				$this->session->redirect($this->getInstalledPage()->url);
+				return;
+			} else {
+				$this->error($this->_('Unable to save rule'));
+			}
+		}
+
+		return $form->render();
+	}
+
+	/**
+	* Executed when requesting removal of an individual row.
+	*
+	*/
+	public function ___executeDelete() {
+
+		$rule = ProcessDateArchiverRule::getRuleByID($this->input->get->id);
+
+		if ($rule->isValid()) {
+			$rule->delete();
+			$this->message($this->_('Deleted Archiving Rule'));
+		}
+
+		$this->session->redirect($this->getInstalledPage()->url);
+	}
+
+	/**
+	 * Install the module and create the page where it lives.
+	 *
+	 */
+	public function ___install()
+	{
+		if (ProcessWire::versionMajor == 2 && ProcessWire::versionMinor < 1) {
+			throw new WireException('This module requires ProcessWire 2.1 or newer');
+		}
+
+		// Create database table this module requires
+		$this->db->query('
+			CREATE TABLE ' . self::tableName . ' (
+			id INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+			date_field_id INT(10) UNSIGNED NOT NULL,
+			item_template_id INT(10) UNSIGNED NOT NULL,
+			year_archive_template_id INT(10) UNSIGNED NOT NULL,
+			month_archive_template_id INT(10) UNSIGNED DEFAULT NULL,
+			day_archive_template_id INT(10) UNSIGNED DEFAULT NULL
+			) ENGINE = MYISAM;');
+
+		// Tell the user that we've created new database table
+		$this->message('Created Table: ' . self::tableName);
+
+		// Tell the user where we've installed the module pages
+		$page = $this->getInstalledPage();
+		$this->message('Installed to ' . $page->path);
+
+		// Tell the user where to go next
+		if ($page->parent->name === 'setup') {
+			$this->message('Click to your \'Setup\' page to start using the Date Archiver');
+		}
+	}
+
+	/**
+	 * Uninstall the module
+	 *
+	 */
+	public function ___uninstall() {
+
+		$page = $this->getInstalledPage();
+
+		if ($page->id) {
+			$this->message('Removed ' . $page->path);
+			$this->pages->delete($page);
+		}
+
+        $this->message('Deleting Table: ' . self::tableName);
+        $this->db->query('DROP TABLE IF EXISTS ' . self::tableName);
+	}
+
+	/**
+	 * Return the page that this Process is installed on.
+	 *
+	 */
+	protected function getInstalledPage() {
+
+		$admin = $this->pages->get($this->config->adminRootPageID);
+		$parent = $admin->child('name=setup');
+
+		if ( ! $parent->id) {
+			$parent = $admin;
+		}
+
+		$page = $parent->child('name=' . self::adminPageName);
+
+		if ( ! $page->id) {
+
+			$page = new Page();
+			$page->parent = $parent;
+			$page->template = $this->templates->get('admin');
+			$page->name = self::adminPageName;
+			$page->title = 'Date Archiver';
+			$page->process = $this;
+			$page->sort = $parent->numChildren;
+			$page->save();
+		}
+
+		return $page;
+	}
+}
+
+
+/**
+ * ProcessDateArchiverRule: archiving rule model.
+ * Used for retrieving, validating and storing archiving rules.
+ *
+ */
+
+class ProcessDateArchiverRule
+{
+	public $id = null;
+	public $date_field_id = null;
+	public $item_template_id = null;
+	public $year_archive_template_id = null;
+	public $month_archive_template_id = null;
+	public $day_archive_template_id = null;
+
+	/**
+	 * Model constructor.
+	 *
+	 */
+	function __construct($data = null) {
+
+		$this->setData($data);
+	}
+
+	/**
+	 * Try's to get and set all model properties from $data.
+	 *
+	 */
+	public function setData($data) {
+
+		if ( ! is_array($data) && ! $data instanceof WireInputData) {
+			return;
+		}
+
+		if ($data['id'] !== null) {
+			$this->id = (int) $data['id'];
+		}
+
+		if ($data['date_field_id'] !== null) {
+			$this->date_field_id = (int) $data['date_field_id'];
+		}
+
+		if ($data['item_template_id'] !== null) {
+			$this->item_template_id = (int) $data['item_template_id'];
+		}
+
+		if ($data['year_archive_template_id'] !== null) {
+			$this->year_archive_template_id = (int) $data['year_archive_template_id'];
+		}
+
+		if ($data['month_archive_template_id'] !== null) {
+			$this->month_archive_template_id = (int) $data['month_archive_template_id'];
+		}
+
+		if ($data['day_archive_template_id'] !== null) {
+			$this->day_archive_template_id = (int) $data['day_archive_template_id'];
+		}
+	}
+
+	/**
+	 * Returns all archiving rules in a array.
+	 *
+	 * @return array Array containing all archiving rules.
+	 *
+	 */
+	public static function getAllRules() {
+
+		$rules = array();
+		$result = wire('db')->query('SELECT * FROM ' . ProcessDateArchiver::tableName);
+
+		while ($row = $result->fetch_assoc()) {
+			$rules[] = new ProcessDateArchiverRule($row);
+		}
+
+		return $rules;
+	}
+
+	/**
+	 * Returns an archiving rule by its ID.
+	 *
+	 * @return ProcessDateArchiverRule
+	 *
+	 */
+	public static function getRuleByID($ID) {
+
+		$result = wire('db')->query('SELECT * FROM ' . ProcessDateArchiver::tableName . ' WHERE id = ' . (int) $ID . ' LIMIT 1');
+		return new ProcessDateArchiverRule($result->fetch_assoc());
+	}
+
+	/**
+	 * Returns an archiving rule by the template ID.
+	 *
+	 * @return ProcessDateArchiverRule
+	 *
+	 */
+	public static function getRuleByTemplateID($templateID) {
+
+		$result = wire('db')->query('SELECT * FROM ' . ProcessDateArchiver::tableName . ' WHERE item_template_id = ' . (int) $templateID . ' LIMIT 1');
+		return new ProcessDateArchiverRule($result->fetch_assoc());
+	}
+
+	/**
+	 * Returns the Datetime field instance.
+	 *
+	 * @return Field|null
+	 *
+	 */
+	public function getDateField() {
+
+		return wire('fields')->get($this->date_field_id);
+	}
+
+	/**
+	 * Returns the item Template instance,
+	 * or false if the template does not exist (anymore).
+	 *
+	 * @return Template|bool
+	 *
+	 */
+	public function getItemTemplate() {
+
+		$template = wire('templates')->get($this->item_template_id);
+		return ($template) ? $template : false;
+	}
+
+	/**
+	 * Returns the year archive Template instance,
+	 * or false if the template does not exist (anymore).
+	 *
+	 * @return Template|bool
+	 *
+	 */
+	public function getYearArchiveTemplate() {
+
+		$yearArchiveTemplate = wire('templates')->get($this->year_archive_template_id);
+		return ($yearArchiveTemplate) ? $yearArchiveTemplate : false;
+	}
+
+	/**
+	 * Returns the month archive Template instance,
+	 * or false if the template does not exist (anymore),
+	 * or null if no month archive template is set.
+	 *
+	 * @return Template|bool|null
+	 *
+	 */
+	public function getMonthArchiveTemplate() {
+
+		if ($this->month_archive_template_id) {
+			$monthArchiveTemplate = wire('templates')->get($this->month_archive_template_id);
+			return ($monthArchiveTemplate) ? $monthArchiveTemplate : false;
+		}
+
+		return null;
+	}
+
+	/**
+	 * Returns the day archive Template instance,
+	 * or false if the template does not exist (anymore),
+	 * or null if no month archive template is set.
+	 *
+	 * @return Template|bool|null
+	 *
+	 */
+	public function getDayArchiveTemplate() {
+
+		if ($this->day_archive_template_id) {
+			$dayArchiveTemplate = wire('templates')->get($this->day_archive_template_id);
+			return ($dayArchiveTemplate) ? $dayArchiveTemplate : false;
+		}
+
+		return null;
+	}
+
+	/**
+	 * Checks if this rule is valid.
+	 *
+	 * @return bool True if this rule is valid.
+	 *
+	 */
+	public function isValid() {
+
+		return (
+			$this->getDateField() &&
+			$this->getItemTemplate() &&
+			$this->getYearArchiveTemplate() &&
+			$this->getMonthArchiveTemplate() !== false &&
+			$this->getDayArchiveTemplate() !== false);
+	}
+
+	/**
+	 * Try's to save the rule to the database.
+	 *
+	 * @return bool True if the rule was saved sucessfully.
+	 *
+	 */
+	public function save() {
+
+		if ($this->isValid()) {
+
+			$id = $this->id;
+			$date_field_id = $this->date_field_id;
+			$item_template_id = $this->item_template_id;
+			$year_archive_template_id = $this->year_archive_template_id;
+			$month_archive_template_id = $this->month_archive_template_id ? $this->month_archive_template_id : 'NULL';
+			$day_archive_template_id = $this->day_archive_template_id ? $this->day_archive_template_id : 'NULL';
+
+			if ($id) {
+				wire('db')->query('
+					UPDATE ' . ProcessDateArchiver::tableName . " SET
+					date_field_id = $date_field_id, item_template_id = $item_template_id, year_archive_template_id = $year_archive_template_id,
+					month_archive_template_id = $month_archive_template_id, day_archive_template_id = $day_archive_template_id
+					WHERE id = $id
+					LIMIT 1");
+			} else {
+				$sql_fields = 'date_field_id, item_template_id, year_archive_template_id, month_archive_template_id, day_archive_template_id';
+				$sql_values = "$date_field_id, $item_template_id, $year_archive_template_id, $month_archive_template_id, $day_archive_template_id";
+				$sql = 'INSERT INTO ' . ProcessDateArchiver::tableName . " ($sql_fields) VALUES ($sql_values)";
+				wire('db')->query($sql);
+				$this->id = wire('db')->insert_id;
+			}
+
+			return true;
+		}
+
+		return false;
+	}
+
+	/**
+	 * Deletes this rule from the database.
+	 *
+	 */
+	public function delete() {
+
+		// Delete rule from database
+		$sql = 'DELETE FROM ' . ProcessDateArchiver::tableName . " WHERE id = $this->id LIMIT 1";
+		wire('db')->query($sql);
+
+		// Reset all properties
+		$this->id = null;
+		$this->date_field_id = null;
+		$this->item_template_id = null;
+		$this->year_archive_template_id = null;
+		$this->month_archive_template_id = null;
+		$this->day_archive_template_id = null;
+	}
+}

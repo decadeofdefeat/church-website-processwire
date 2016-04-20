@@ -1,0 +1,173 @@
+.Inputfields > li > .ui-widget-content > ul.InputfieldFileList > li,
+.Inputfields > li > .InputfieldContent > ul.InputfieldFileList > li {
+	margin: 0 0 1em 0;
+	position: relative; 
+	cursor: move; 
+}
+	.content .InputfieldFile.InputfieldItemListCollapse ul.InputfieldFileList > li,
+	.Inputfields > li.InputfieldHasFileList.InputfieldRenderValue > .InputfieldContent > ul.InputfieldFileList > li,
+	.Inputfields > li.InputfieldFile.InputfieldItemListCollapse > .InputfieldContent > ul.InputfieldFileList > li {
+		/* items that have no text inputs */
+		/* or items that are in render value mode */
+		margin-bottom: 0.25em;
+	}
+	.content .Inputfields > .InputfieldItemList > .InputfieldContent > ul.InputfieldFileList > li:last-child {
+		/* last item needs no margin */
+		margin-bottom: 0;
+	}
+
+	.InputfieldItemList .InputfieldContent.ui-state-hover {
+		/* ajax upload drag over */
+		background: none;
+	}
+
+	ul.InputfieldFileList li .InputfieldFileInfo, 
+	.AjaxUpload .InputfieldFileInfo {
+		padding: 0.5em;
+		line-height: 1em;
+		margin-bottom: 0; 
+		margin-top: 0;
+	}
+	ul.InputfieldFileList li .InputfieldFileInfo > i.fa {
+		position: relative; 
+		left: 2px;
+	}
+	ul.InputfieldFileList li .InputfieldFileInfo .InputfieldFileName {
+		font-weight: bold; 
+		cursor: pointer;
+	}
+		ul.InputfieldFileList li .InputfieldFileInfo .InputfieldFileName:hover {
+			text-decoration: underline; 
+			background: none; 
+		}
+	
+	.InputfieldFileDrag {
+		opacity: 0.7;
+	}
+	.InputfieldFileInfo:hover .InputfieldFileDrag {
+		opacity: 1.0;
+	}
+
+	ul.InputfieldFileList li .InputfieldFileInfo .InputfieldFileStats, 
+	.AjaxUpload .InputfieldFileStats {
+		opacity: 0.65; 
+		font-size: 0.9166666em; 
+	}
+
+	ul.InputfieldFileList li .ui-state-error .InputfieldFileName { 
+		text-decoration: line-through; 
+	}
+
+	ul.InputfieldFileList li .InputfieldFileDelete {
+		float: right;
+		cursor: pointer;
+	}
+		ul.InputfieldFileList li .InputfieldFileDelete,
+		ul.InputfieldFileList li .InputfieldFileDelete input {
+			display: inline;
+			font-weight: normal; 
+		}
+			ul.InputfieldFileList li .InputfieldFileDelete input {
+				position: absolute; 
+				top: 0;
+				right: 0; 
+				display: none; 
+			}
+
+	ul.InputfieldFileList li .ui-icon {
+		float: left; 
+	}
+
+	.InputfieldFileEmpty .HideIfEmpty,
+	.InputfieldFileSingle .HideIfSingle,
+	.InputfieldFileMultiple .HideIfMultiple {
+		display: none !important; 
+	}
+
+	ul.InputfieldFileList li .InputfieldFileData {
+		margin-top: 0; 
+		margin-bottom: 0;
+		padding: 1em; 
+	}
+	
+	.InputfieldFile.InputfieldItemListCollapse ul.InputfieldFileList li .InputfieldFileData {
+		display: none;
+	}
+
+	ul.InputfieldFileList li .InputfieldFileLink {
+		font-weight: bold; 
+		margin: 0.5em 0;
+	}
+	
+	#content ul.InputfieldFileList li .langTabs > ul {
+		padding-left: 0;
+	}
+
+	ul.InputfieldFileList li .InputfieldFileTags,
+	ul.InputfieldFileList li .InputfieldFileDescription {
+		font-weight: normal;
+		margin: 0;
+		padding: 0;
+	}
+		ul.InputfieldFileList li .hasLangTabs .InputfieldFileDescription {
+			padding-top: 0.5em;
+		}
+		ul.InputfieldFileList li .InputfieldFileTags input,
+		ul.InputfieldFileList li .InputfieldFileDescription input {
+			width: 100%; 
+		}
+
+		ul.InputfieldFileList li .InputfieldFileTags input {
+			margin-bottom: 0.5em;
+		}
+
+
+	ul.InputfieldFileList li .InputfieldFileSort {
+		display: none; 
+	}
+
+	ul.InputfieldFileListBlank + p.description {
+		margin-top: 0;
+	}
+
+
+.InputfieldFileValidExtensions {
+	display: block;
+}
+
+.Inputfields .InputfieldFileUpload {
+	position: relative;
+	margin: 0; 
+}
+	.InputfieldFileUpload input[type=file] {
+		display: block;
+		margin: 0.25em 0;
+	}
+
+	.InputfieldFileUpload img {
+		max-width: 100px;
+	}
+
+
+	.InputfieldFileUpload .AjaxUploadDropHere {
+		display: none;
+		position: absolute;
+		top: 0;
+		right: 0;
+		opacity: 0.75; 
+	}
+	
+.AjaxUpload .ui-progressbar-value {
+	padding: 0 !important;
+}
+
+.AjaxUpload .ui-progressbar-value span {
+	float: right;
+	margin: 3px 5px;
+}
+
+.Inputfields .InputfieldFileList .langTabsContainer + .InputfieldFileTags {
+	display: block;
+	margin-top: 0.5em;
+}
+

@@ -1,0 +1,34 @@
+<h3>Minimize Stylesheets or parse LESS (in your Template)</h3>
+<p>
+    Minimization of a single file.
+</p>
+<p style="border: 1px solid #ccc; padding: 10px;">
+    <code>
+        &lt;link rel=&quot;stylesheet&quot; type=&quot;text/css&quot; href=&quot;&lt;?php echo AIOM::CSS('css/stylesheet.css'); ?&gt;&quot;&gt;
+    </code>
+</p>
+<p>
+    Minimize multiple files into one file.
+</p>
+<p style="border: 1px solid #ccc; padding: 10px;">
+    <code>
+        &lt;link rel=&quot;stylesheet&quot; href=&quot;&lt;?php echo AIOM::CSS(array('css/file-1.css', 'css/file-2.less', 'css/file-3.css', 'css/file-4.less')); ?&gt;&quot;&gt;
+    </code>
+</p>
+<h3>Minimize Javascripts (in your Template)</h3>
+<p>
+    Minimization of a single file.
+</p>
+<p style="border: 1px solid #ccc; padding: 10px;">
+    <code>
+        &lt;script src=&quot;&lt;?php echo AIOM::JS('js/javascript.js'); ?&gt;&quot;&gt;&lt;/script&gt;
+    </code>
+</p>
+<p>
+    Minimize multiple files into one file.
+</p>
+<p style="border: 1px solid #ccc; padding: 10px;">
+    <code>
+        &lt;script src=&quot;&lt;?php echo AIOM::JS(array('js/file-1.js', 'js/file-2.js', 'js/file-3.js', 'js/file-4.js')); ?&gt;&quot;&gt;&lt;/script&gt;
+    </code>
+</p>

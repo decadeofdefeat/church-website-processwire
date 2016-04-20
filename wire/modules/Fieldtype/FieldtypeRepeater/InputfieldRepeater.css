@@ -1,0 +1,61 @@
+
+.Inputfields .InputfieldRepeater > .ui-widget-content > ul.Inputfields, /* old */
+.Inputfields .InputfieldRepeater > .InputfieldContent > ul.Inputfields { /* new */
+	margin-bottom: 0; 
+}
+
+.InputfieldRepeater .InputfieldWrapper,
+.InputfieldRepeater .InputfieldWrapper > .Inputfields {
+        margin-top: 0 !important;
+}
+
+.InputfieldRepeater li.InputfieldRepeaterReady {
+	/* item that's rendered and ready to be a new item */
+	position: absolute;
+	top: 0;
+	left: -9999px; 
+}
+
+.InputfieldRepeaterAddItem input {
+	position: absolute;	
+	left: -9999px; 
+	top: 0;
+}
+
+.Inputfields .InputfieldRepeater .InputfieldRepeaterItem > .InputfieldHeader {
+	line-height: 1em;
+	padding: 0.5em;
+}
+.Inputfields .InputfieldRepeater .InputfieldRepeaterItem > .InputfieldHeader .toggle-icon {
+	line-height: 1em;
+}
+
+.Inputfields .InputfieldRepeater .InputfieldRepeaterNewItem {
+	display: none; 
+	margin-bottom: 1em !important; 
+}
+
+.InputfieldRepeater  ul.ui-sortable > .InputfieldFieldset > label {
+	padding-left: 25px; 
+	position: relative;
+}
+
+.InputfieldRepeaterDrag {
+	cursor: ns-resize;
+	opacity: 0.7;
+	line-height: 1em;
+}
+	.InputfieldRepeaterDrag:hover {
+		cursor: move; 	
+		opacity: 1.0;
+	}
+
+.InputfieldRepeater .InputfieldFieldset > label > .InputfieldRepeaterTrash {
+	cursor: pointer; 
+	float: right;
+}
+
+.InputfieldRepeater ul.Inputfields + .InputfieldRepeaterAddItem {
+	/* removes extra space at top when 'add item' is the only thing in the repeater field */
+	margin-top: 0;
+}

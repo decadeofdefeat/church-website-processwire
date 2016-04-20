@@ -1,0 +1,22 @@
+<h3>Performance tip</h3>
+<p>
+    To increase performance even further, place your stylesheets in &lt;head&gt;-area and the javascript before the &lt;/body&gt;-tag at the end of the document.
+</p>
+<h3>.htaccess change for domain sharding</h3>
+<p>
+    To prevent duplicate content, you need to make a change in the .htaccess file of your ProcessWire installation. Add the following at the end of the .htaccess file in the ProcessWire Webroot and change "static.mysite.com" to your subdomain and "http://www.mysite.com" to your main domain. Please take care, the %-sign at the end of the domain is required!
+</p>
+<p style="border: 1px solid #ccc; padding: 10px;">
+    <code>
+        # ----------------------------------------------<br>
+        # Domain sharding option<br>
+        # ----------------------------------------------<br>
+        &lt;IfModule mod_rewrite.c&gt;<br>
+        <br>
+        &nbsp;&nbsp;&nbsp;&nbsp;RewriteCond %{HTTP_HOST} ^static.mysite.com [NC]<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;RewriteCond %{REQUEST_URI} !^.*\.(cur|gif|ico|jpe?g|png|svgz?|webp|eot|otf|ttc|ttf|woff|css|js)$<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;RewriteRule ^(.*)$ http://www.mysite.com%{REQUEST_URI} [L,QSA]<br>
+        <br>
+        &lt;/IfModule&gt;
+    </code>
+</p>

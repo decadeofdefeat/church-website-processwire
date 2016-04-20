@@ -1,0 +1,143 @@
+<?php
+
+/**
+ *  MarkupBrowserUpdate - Loads the browser update script from browser-update.org
+ *  by Martin Freudenreich
+ *
+ * See README file for further links regarding module development.
+ *
+ * ProcessWire 2.x
+ * Copyright (C) 2014 by Ryan Cramer
+ * Licensed under GNU/GPL v2, see LICENSE.TXT
+ *
+ * http://processwire.com
+ *
+ */
+
+class MarkupBrowserUpdate extends WireData implements Module, ConfigurableModule {
+
+	public static function getModuleInfo() {
+
+		return array(
+			'title' => 'Markup Browser Update',
+			'version' => 100,
+			'summary' => 'An example module to get browser-update.org snippet on the page.',
+			'href' => 'http://browser-update.org',
+			'singular' => true,
+			'autoload' => true,
+			'icon' => 'globe',
+			);
+	}
+
+    /**
+     * Data as used by the get/set functions
+     */
+    protected $data = array();
+
+	/**
+	 * Default settings for the module
+	 */
+    static public function getDefaultData() {
+		return array(
+			'test'	=> 'false',
+			'ie' => '',
+			'ff' => '',
+			'op' => '',
+			'sa' => ''
+        );
+    }
+
+
+    /**
+     * Populate the default config data
+     */
+    public function __construct() {
+       foreach(self::getDefaultData() as $key => $value) {
+               $this->$key = $value;
+       }
+    }
+
+	/**
+	 * Configuration of versionchecks
+	 */
+    public static function getModuleConfigInputfields(array $data) {
+        $data = array_merge(self::getDefaultData(), $data);
+		$wrapper = new InputfieldWrapper();
+
+		$fieldset = wire('modules')->get("InputfieldFieldset");
+		$fieldset->attr('id', 'batch_child_editor_where_available_fieldset');
+		$fieldset->label = __("Leave the settings blank for automatic detection! Or make your own settings for browserversions and be aware of adjusting the versionnumbers from time to time!");
+		$fieldset->description = __("If fields are blank the automatic works like: If a browser is no longer supported by the vendor or has security vulnerabilities, it will be added to the set.");
+		$wrapper->add($fieldset);
+
+		$f = wire('modules')->get('InputfieldInteger');
+		$f->attr('name', 'ie');
+		$f->label = 'Internet Explorer';
+		$f->attr('value', $data['ie']);
+		$f->columnWidth = 25;
+		$fieldset->add($f);
+
+		$f = wire('modules')->get('InputfieldInteger');
+		$f->attr('name', 'ff');
+		$f->label = 'FireFox';
+		$f->attr('value', $data['ff']);
+		$f->columnWidth = 25;
+		$fieldset->add($f);
+
+		$f = wire('modules')->get('InputfieldInteger');
+		$f->attr('name', 'op');
+		$f->label = 'Opera';
+		$f->attr('value', $data['op']);
+		$f->columnWidth = 25;
+		$fieldset->add($f);
+
+		$f = wire('modules')->get('InputfieldInteger');
+		$f->attr('name', 'sa');
+		$f->label = 'Safari';
+		$f->attr('value', $data['sa']);
+		$f->columnWidth = 25;
+		$fieldset->add($f);
+
+		$f = wire('modules')->get('InputfieldSelect');
+		$f->attr('name', 'test');
+		$f->label = 'Set true for testing the output';
+		$f->options = array(
+		  'true' => 'true',
+		  'false' => 'false'
+		);
+		$f->attr('value', $data['test']);
+		$fieldset->add($f);
+
+		return $wrapper;
+	}
+
+	/**
+	 * Initialize the module
+	 */
+	public function init() {
+
+		// add a hook after each page is rendered and modify the output
+		$this->addHookAfter('Page::render', $this, 'browserupdate');
+
+	}
+
+	/**
+	 * Hooks into every page after it's rendered and adds the browser-update.org snippet after the body tag
+	 */
+	public function browserupdate($event) {
+
+		$page = $event->object;
+
+		// don't add this to the admin pages
+		if($page->template == 'admin') return;
+
+		//check for own settings if no settings there use the automatic
+		if($this->data['ie'] || $this->data['ff'] || $this->data['op'] || $this->data['sa']) {
+			$versionstring = 'vs:{i:'.$this->data['ie'].',f:'.$this->data['ff'].',o:'.$this->data['op'].',s:'.$this->data['sa'].'},c:2';
+		} else {
+			$versionstring = 'c:2';
+		}
+		// add a the script right before the closing body tag
+		$event->return = str_replace('</body>', '<script>var $buoop = {'.$versionstring.', test:'.$this->data['test'].'}; function $buo_f(){var e = document.createElement("script"); e.src = "//browser-update.org/update.min.js"; document.body.appendChild(e); }; try {document.addEventListener("DOMContentLoaded", $buo_f,false)} catch(e){window.attachEvent("onload", $buo_f)}</script></body>', $event->return);
+	}
+}

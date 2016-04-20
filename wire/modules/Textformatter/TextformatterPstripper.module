@@ -1,0 +1,35 @@
+<?php
+
+/**
+ * ProcessWire Paragraph Stripper Textformatter
+ *
+ * Strips paragraph <p> tags that may have been applied by other text formatters before it. 
+ *
+ * For example, you might use this textformatter after Markdown to remove the surrounding paragraph tags when 
+ * the code in your template is supplying it's own wrapper, like "<p class='summary'>$str</p>". Without this
+ * textformatter, you would have double paragraph tags. 
+ * 
+ * ProcessWire 2.x 
+ * Copyright (C) 2015 by Ryan Cramer 
+ * This file licensed under Mozilla Public License v2.0 http://mozilla.org/MPL/2.0/
+ * 
+ * https://processwire.com
+ * 
+ *
+ */
+
+class TextformatterPstripper extends Textformatter {
+
+	public static function getModuleInfo() {
+		return array(
+			'title' => 'Paragraph Stripper', 
+			'version' => 100, 
+			'summary' => "Strips paragraph <p> tags that may have been applied by other text formatters before it. ", 
+		); 
+	}
+
+	public function format(&$str) {
+		if(stripos($str, "<p>") === false) return;
+		$str = trim(str_ireplace(array('<p>', '</p>'), '', $str)); 
+	}
+}

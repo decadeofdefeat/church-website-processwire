@@ -1,0 +1,21 @@
+<div class='section section-series' style='background: #565656 url("/site/assets/files/1055/kingslastweek-background1.jpg") no-repeat center center; -webkit-background-size: cover;-moz-background-size: cover;-o-background-size: cover; background-size: cover;height:auto;'>
+
+  <div class='container pd-t-lg pd-b-lg'>
+    <div class="row center-row-series">
+       <div class='col-xs-12 col-sm-6 col-md-6 center-col-series' id='current-series-graphic'>
+          <div class='series-img-holder'>
+            <img src='/site/assets/files/1055/kingslastweek_transparent.png' alt='The Meal' class='img-responsive'/>
+          </div>
+       </div>
+        <div class='col-xs-12 col-sm-6 col-md-6 center-col-series' style='padding:0px 40px;'>
+            <!-- recent message goes here -->
+            <h4>RECENT MESSAGE</h4>
+            <h2>The Meal</h2>
+            <h3>The King&#039;s Last Week (Part 2)</h3>
+            <p>March 8, 2015 &middot; Pastor Jerry Gillis</p>
+            <a class='btn btn-default btn-clear btn-left mg-t-sm' href='/sermons/the-kings-last-week/the-meal/'>Watch Now</a>
+                     </div>
+                  </div>
+                </div>
+
+              </div>

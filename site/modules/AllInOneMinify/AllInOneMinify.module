@@ -1,0 +1,1002 @@
+<?php
+
+/**
+ * @author  FlipZoom Media Inc. - David Karich & Conclurer GbR
+ * @contact David Karich <david.karich@flipzoom.de>, Conclurer GbR <aiom@conclurer.com>
+ * @website www.flipzoom.de, www.conclurer.com
+ * @create  2013-11-26
+ * @style   Tab size: 4 / Soft tabs: YES
+ * ----------------------------------------------------------------------------------
+ * @licence
+ * Copyright (c) 2013 FlipZoom Media Inc. - David Karich
+ * Copyright (c) 2014 Conclurer GbR
+ * Permission is hereby granted, free of charge, to any person obtaining a copy 
+ * of this software and associated documentation files (the "Software"), to deal 
+ * in the Software without restriction, including without limitation the rights 
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell 
+ * copies of the Software, and to permit persons to whom the Software is furnished 
+ * to do so, subject to the following conditions: The above copyright notice and 
+ * this permission notice shall be included in all copies or substantial portions 
+ * of the Software.
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, 
+ * INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A 
+ * PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT 
+ * HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION 
+ * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
+ * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ * ----------------------------------------------------------------------------------
+ */
+
+class AllInOneMinify extends WireData implements Module, ConfigurableModule {
+
+    // ------------------------------------------------------------------------
+    // Name of the cache folder.
+    // ------------------------------------------------------------------------
+    private static $cacheDir  = 'aiom';
+
+    // ------------------------------------------------------------------------
+    // Init global configuration variables.
+    // ------------------------------------------------------------------------
+    private static $cacheMaxLifetime;
+    private static $cssCachePrefix;
+    private static $jsCachePrefix;
+    private static $enableHTMLMinify;
+    private static $developmentMode;
+    private static $directoryTraversal;
+    private static $domainSharding;
+    private static $domainShardingSSL;
+    private static $templateUseSSL;
+
+    /**
+     * ------------------------------------------------------------------------
+     * getModuleInfo is a module required by all modules to tell 
+     * ProcessWire about them
+     * ------------------------------------------------------------------------
+     * @return array
+     */
+    public static function getModuleInfo() {
+
+        return array(
+
+            // ------------------------------------------------------------------------
+            // The module'ss title, typically a little more descriptive than the 
+            // class name
+            // ------------------------------------------------------------------------
+            'title' => __('AIOM+ (All In One Minify) for CSS, LESS, JS and HTML'), 
+
+            // ------------------------------------------------------------------------
+            // Version: major, minor, revision, i.e. 100 = 1.1.0
+            // ------------------------------------------------------------------------
+            'version' => 314,
+
+            'author' => 'David Karich & Conclurer GbR',
+
+            // ------------------------------------------------------------------------
+            // Summary is brief description of what this module is
+            // ------------------------------------------------------------------------
+            'summary' => __('AIOM+ (All In One Minify) is a module to easily improve the performance of your website. By a simple function call Stylesheets, LESS  and Javascript files can be parsed, minimized and combined into one single file. This reduces the server requests, loading time and minimizes the traffic. In addition, the generated HTML source code can be minimized and all generated files can be loaded over a cookieless domain (domain sharding).'),
+            
+            // ------------------------------------------------------------------------
+            // Optional URL to more information about the module
+            // ------------------------------------------------------------------------
+            'href' => 'https://github.com/conclurer/ProcessWire-AIOM-All-In-One-Minify',
+
+            // ------------------------------------------------------------------------
+            // singular=true: indicates that only one instance of the module is allowed.
+            // This is usually what you want for modules that attach hooks.
+            // ------------------------------------------------------------------------
+            'singular' => true, 
+
+            // ------------------------------------------------------------------------
+            // autoload=true: indicates the module should be started with ProcessWire.
+            // This is necessary for any modules that attach runtime hooks, otherwise those
+            // hooks won't get attached unless some other code calls the module on it's own.
+            // Note that autoload modules are almost always also 'singular' (seen above).
+            // ------------------------------------------------------------------------
+            'autoload' => true, 
+        );
+    }
+
+    /**
+     * ------------------------------------------------------------------------
+     * Configure the input fields for the backend.
+     * ------------------------------------------------------------------------
+     * @param  array  $data Module data from the database.
+     */
+    public static function getModuleConfigInputfields(array $data) {
+        
+        // ------------------------------------------------------------------------
+        // Initialize InputField wrapper
+        // ------------------------------------------------------------------------
+        $fields             = new InputfieldWrapper(); 
+        
+        // ------------------------------------------------------------------------
+        // Define text input field for the stylesheet-prefix.
+        // ------------------------------------------------------------------------
+        $field              = wire('modules')->get('InputfieldText');
+        $field->name        = 'stylesheet_prefix';
+        $field->label       = __('Stylesheet-Prefix');
+        $field->columnWidth = 33;
+        $field->value       = (!empty($data['stylesheet_prefix'])) ? wire('sanitizer')->name($data['stylesheet_prefix']) : 'css_';
+        $field->description = __('The prefix of the generated combined stylesheet file. Allowed: Alphanumeric characters like "A-Z, 0-9 and _ -".');
+        $fields->add($field); 
+ 
+        // ------------------------------------------------------------------------
+        // Define text input field for the javascript-prefix.
+        // ------------------------------------------------------------------------
+        $field              = wire('modules')->get('InputfieldText');
+        $field->name        = 'javascript_prefix';
+        $field->label       = __('Javascript-Prefix');
+        $field->columnWidth = 34;
+        $field->value       = (!empty($data['javascript_prefix'])) ? wire('sanitizer')->name($data['javascript_prefix']) : 'js_';
+        $field->description = __('The prefix of the generated combined javascript file. Allowed: Alphanumeric characters like "A-Z, 0-9 and _ -".');
+        $fields->add($field); 
+
+        // ------------------------------------------------------------------------
+        // Define text input field for the maximum cache lifetime.
+        // ------------------------------------------------------------------------
+        $field              = wire('modules')->get('InputfieldText');
+        $field->name        = 'max_cache_lifetime';
+        $field->label       = __('Lifetime');
+        $field->columnWidth = 33;
+        $field->value       = (!empty($data['max_cache_lifetime'])) ? self::_sanitizeNumericCacheTime($data['max_cache_lifetime']) : 2419200;
+        $field->description = __('The max. lifetime of the cached files in seconds. Min. 60 seconds, max. 31536000 seconds (1 year).');
+        $fields->add($field);
+
+        // ------------------------------------------------------------------------
+        // Define checkbox field to enable or disable the HTML minimization.
+        // ------------------------------------------------------------------------
+        $field              = wire('modules')->get('InputfieldCheckbox');
+        $field->name        = 'html_minify';
+        $field->label       = __('HTML minify');
+        $field->columnWidth = 25;
+        $field->value       = (isset($data['html_minify'])) ? $data['html_minify'] : 1;
+        $field->checked     = ($field->value == 1) ? 'checked' : '';
+        $field->description = __('In order to remove unnecessary whitespace and comments from the HTML source code, enable this option.');
+        $fields->add($field); 
+
+        // ------------------------------------------------------------------------
+        // Define checkbox field to enable or disable the development mode.
+        // ------------------------------------------------------------------------
+        $field              = wire('modules')->get('InputfieldCheckbox');
+        $field->name        = 'development_mode';
+        $field->label       = __('Development mode');
+        $field->columnWidth = 25;
+        $field->value       = (isset($data['development_mode'])) ? $data['development_mode'] : 0;
+        $field->checked     = ($field->value == 1) ? 'checked' : '';
+        $field->description = __('Enable development mode to prevent caching by the browser and not to minimize the files.');
+        $fields->add($field); 
+
+        // ------------------------------------------------------------------------
+        // Define checkbox field to enable or disable the directory traversal option.
+        // ------------------------------------------------------------------------
+        $field              = wire('modules')->get('InputfieldCheckbox');
+        $field->name        = 'directory_traversal';
+        $field->label       = __('Allow Directory Traversal');
+        $field->columnWidth = 25;
+        $field->value       = (isset($data['directory_traversal'])) ? $data['directory_traversal'] : 0;
+        $field->checked     = ($field->value == 1) ? 'checked' : '';
+        $field->description = __('Enable the directory traversal option to make it possible to add files from outside of the template folders. (../)');
+        $fields->add($field); 
+
+        // ------------------------------------------------------------------------
+        // Define button to empty the cache.
+        // ------------------------------------------------------------------------
+        $_cacheInfo         = self::_getNumberOfCacheFiles();
+        $field              = wire('modules')->get('InputfieldMarkup');
+        $field->columnWidth = 25;
+        $field->label       = __('Cache control');
+        $field->description = __('Here you can delete all cached files.').'<br /><br />';
+        $field->description.= sprintf(__('Cached files: %s | Used space: %s'), $_cacheInfo['numberOfFiles'], $_cacheInfo['bytesTotal']);
+        
+            // ------------------------------------------------------------------------
+            // Add custom button to markup field
+            // ------------------------------------------------------------------------
+            $field_button           = wire('modules')->get('InputfieldButton');
+            $field_button->name     = 'empty_cache';
+            $field_button->value    = __('Empty cache');
+            $field_button->href     = 'edit?name='.wire('input')->get('name').'&cache=clear';
+
+        $field->add($field_button); 
+        $fields->add($field);
+
+        // ------------------------------------------------------------------------
+        // Define text input field for domain sharding.
+        // ------------------------------------------------------------------------
+        $field              = wire('modules')->get('InputfieldText');
+        $field->name        = 'domain_sharding';
+        $field->label       = __('Domain sharding');
+        $field->columnWidth = 50;
+        $field->attr(array('placeholder' => 'http://static.mysite.com'));
+        $field->value       = (!empty($data['domain_sharding'])) ? self::_validateURL($data['domain_sharding']) : '';
+        $field->description = __('In order to speed up the download of stylesheets and javascripts, this can be made available via a second subdomain (parallel download and Cookieless domain). The second subdomain (eg static.mysite.com) must also point to the web root directory of ProcessWire. Leave the field blank to disable this option.');
+        $fields->add($field); 
+
+        // ------------------------------------------------------------------------
+        // Define text input field for domain sharding with SSL.
+        // ------------------------------------------------------------------------
+        $field              = wire('modules')->get('InputfieldText');
+        $field->name        = 'domain_sharding_ssl';
+        $field->label       = __('Domain sharding (SSL)');
+        $field->columnWidth = 50;
+        $field->attr(array('placeholder' => 'https://static.mysite.com'));
+        $field->value       = (!empty($data['domain_sharding_ssl'])) ? self::_validateURL($data['domain_sharding_ssl']) : '';
+        $field->description = __('In order to speed up the download of stylesheets and javascripts, this can be made available via a second subdomain (parallel download and Cookieless domain). The second subdomain (eg static.mysite.com) must also point to the web root directory of ProcessWire. Leave the field blank to disable this option.');
+        $fields->add($field);
+        
+        // ------------------------------------------------------------------------
+        // Define markup input field for usage tips.
+        // ------------------------------------------------------------------------
+        $field              = wire('modules')->get('InputfieldMarkup');
+        $field->columnWidth = 50;
+        $field->label       = __('How to use AIOM+');
+        $field->description = sprintf(__('Quick introduction to the module and how you use it. Full documentation under: %s'), 'https://github.com/conclurer/ProcessWire-AIOM-All-In-One-Minify');
+        $field->markupText  = file_get_contents(wire('config')->paths->AllInOneMinify.'doc'.DIRECTORY_SEPARATOR.'how-to-use.html');
+        $fields->add($field);
+
+        // ------------------------------------------------------------------------
+        // Define markup input field for performance tips.
+        // ------------------------------------------------------------------------
+        $field              = wire('modules')->get('InputfieldMarkup');
+        $field->columnWidth = 50;
+        $field->label       = __('Performance tips');
+        $field->description = __('Tips how you can improve the performance of your page even further and what you need to consider if you are using domain sharding.');
+        $field->markupText  = file_get_contents(wire('config')->paths->AllInOneMinify.'doc'.DIRECTORY_SEPARATOR.'htaccess-and-performance-tips.html');
+        $fields->add($field);
+ 
+        // ------------------------------------------------------------------------
+        // Return of the fields.
+        // ------------------------------------------------------------------------
+        return $fields; 
+    }
+
+    /**
+     * ------------------------------------------------------------------------
+     * Create the cache folder in the Assets folder at module installation.
+     * ------------------------------------------------------------------------
+     */
+    public function ___install() {
+
+        // ------------------------------------------------------------------------
+        // Check if the folder already exists.
+        // ------------------------------------------------------------------------
+        if(is_dir(wire('config')->paths->assets.self::$cacheDir.DIRECTORY_SEPARATOR)) return true;
+
+        // ------------------------------------------------------------------------
+        // Try to create the folder recursively.
+        // ------------------------------------------------------------------------
+        if(wireMkdir(wire('config')->paths->assets.self::$cacheDir.DIRECTORY_SEPARATOR) === false) {
+            
+            // ------------------------------------------------------------------------
+            // If the folder can not be created, trigger an error.
+            // ------------------------------------------------------------------------
+            throw new WireException('The cache folder ('.wire('config')->paths->assets.self::$cacheDir.DIRECTORY_SEPARATOR.') could not be created.');
+        }
+    }
+
+    /**
+     * ------------------------------------------------------------------------
+     * Remove the cache folder in the Assets folder at module uninstallation.
+     * ------------------------------------------------------------------------
+     */
+    public function ___uninstall() {
+
+        // ------------------------------------------------------------------------
+        // Check if the folder already removed.
+        // ------------------------------------------------------------------------
+        if(!is_dir(wire('config')->paths->assets.self::$cacheDir.DIRECTORY_SEPARATOR)) return true;
+
+        // ------------------------------------------------------------------------
+        // Remove all combined files in the cache folder.
+        // ------------------------------------------------------------------------
+        self::_clearCache(true);
+
+        // ------------------------------------------------------------------------
+        // Try to remove the cache folder.
+        // ------------------------------------------------------------------------
+        if(chmod(wire('config')->paths->assets.self::$cacheDir.DIRECTORY_SEPARATOR, 0777) === false OR rmdir(wire('config')->paths->assets.self::$cacheDir.DIRECTORY_SEPARATOR) === false) {
+
+            // ------------------------------------------------------------------------
+            // If the folder and files can not be removed, trigger an error.
+            // ------------------------------------------------------------------------
+            throw new WireException('The cache folder ('.wire('config')->paths->assets.self::$cacheDir.DIRECTORY_SEPARATOR.') and files could not be removed.');
+        }
+    }
+
+    /**
+     * ------------------------------------------------------------------------
+     * Initialize the default configuration in the constructor.
+     * ------------------------------------------------------------------------
+     */
+    public function __construct() {
+  
+        // ------------------------------------------------------------------------
+        // Prefix of the combined file.
+        // ------------------------------------------------------------------------
+        $this->stylesheet_prefix    = 'css_';
+
+        // ------------------------------------------------------------------------
+        // Prefix of the combined file.
+        // ------------------------------------------------------------------------
+        $this->javascript_prefix    = 'js_';
+
+        // ------------------------------------------------------------------------
+        // Duration in seconds before a combined file is automatically deleted.
+        // 2419200 Seconds = 4 Weeks
+        // ------------------------------------------------------------------------
+        $this->max_cache_lifetime   = 2419200;
+
+        // ------------------------------------------------------------------------
+        // Enable or disable HTML source code minify (default: true)
+        // ------------------------------------------------------------------------
+        $this->html_minify          = 1;
+
+        // ------------------------------------------------------------------------
+        // Enable or disable development mode (Combine but no minimizing)
+        // ------------------------------------------------------------------------
+        $this->development_mode     = 0;
+
+        // ------------------------------------------------------------------------
+        // Enable or disable directory traversal option
+        // ------------------------------------------------------------------------
+        $this->directory_traversal  = 0;
+
+        // ------------------------------------------------------------------------
+        // Cookie-less domain for parallel Asset downloads. Must point to web root.
+        // Use a CNAME DNS record. If empty, the default URL will be used. 
+        // Format: http(s)://static.mydomain.com (without a concluding Slash)
+        // ------------------------------------------------------------------------
+        $this->domain_sharding      = '';
+        $this->domain_sharding_ssl  = '';
+    }
+
+    /**
+     * ------------------------------------------------------------------------
+     * Initialize the module
+     * ------------------------------------------------------------------------
+     * ProcessWire calls this when the module is loaded. For 'autoload' modules, 
+     * this will be called when ProcessWire's API is ready. As a result, this 
+     * is a good place to attach hooks.
+     * ------------------------------------------------------------------------
+     */
+    public function init() {
+
+        // ------------------------------------------------------------------------
+        // Check if the current template requires SSL.
+        // ------------------------------------------------------------------------
+        $this->addHookBefore('Page::render', $this, 'CheckSSL');
+
+        // ------------------------------------------------------------------------
+        // Set module configuration
+        // ------------------------------------------------------------------------
+        self::$cssCachePrefix       = wire('sanitizer')->name($this->stylesheet_prefix);
+        self::$jsCachePrefix        = wire('sanitizer')->name($this->javascript_prefix);
+        self::$cacheMaxLifetime     = self::_sanitizeNumericCacheTime($this->max_cache_lifetime);
+        self::$enableHTMLMinify     = ($this->html_minify == 1) ? true : false;
+        self::$developmentMode      = ($this->development_mode == 1) ? true : false;
+        self::$directoryTraversal   = ($this->directory_traversal == 1) ? true : false;
+        self::$domainSharding       = self::_validateURL($this->domain_sharding);
+        self::$domainShardingSSL    = self::_validateURL($this->domain_sharding_ssl);
+
+        // ------------------------------------------------------------------------
+        // Add a hook that is called after rendering the page and minimize the 
+        // generated source code.
+        // ------------------------------------------------------------------------
+        $this->addHookAfter('Page::render', $this, 'HTML');
+
+        // ------------------------------------------------------------------------
+        // Check if already cached files longer than the configured time exist. 
+        // If so, remove those files.
+        // ------------------------------------------------------------------------
+        self::_clearCache();
+
+        // ------------------------------------------------------------------------
+        // Add a hook that is called after rendering the page and clear the cache 
+        // if parameter and template are correct.
+        // ------------------------------------------------------------------------
+        $this->addHookAfter('Page::render', $this, 'ClearCacheFromBackend');
+    }
+
+    /**
+     * ------------------------------------------------------------------------
+     * Minimization and combination of JS files. Executable from the template.
+     * ------------------------------------------------------------------------
+     * @param  mixed $javascripts  Relative string from the template folder or an array with several files 
+     *                             relative to the template folder. For example: 'js/file.js' or 
+     *                             array('js/file1.js', 'js/file2.js')
+     *                             
+     * @example <script src="<?php echo AllInOneMinify::JS(array('js/file1.js', 'js/file2.js')); ?>"></script>
+     * 
+     * @return string              URL string of the combined javascript file
+     */
+    public static function JS($javascripts) {
+
+        // ------------------------------------------------------------------------
+        // Check if at least one file was passed.
+        // ------------------------------------------------------------------------
+        if(empty($javascripts)) throw new WireException('There were no files specified to minimize.');
+
+        // ------------------------------------------------------------------------
+        // Check if files exist and generating the cache file name based 
+        // on the last editing of the file.
+        // ------------------------------------------------------------------------
+        $javascripts    = is_array($javascripts) ? $javascripts : array($javascripts);
+        $javascripts    = self::_fileArray($javascripts, '.js');
+        $cacheFile      = self::_getCacheName($javascripts, self::$jsCachePrefix, '.js');
+        $assetDomain    = self::_getAssetDomain();
+
+        // ------------------------------------------------------------------------
+        // Check if there is already a combined and cached file. If not, 
+        // generating a new minimized cache file.
+        // ------------------------------------------------------------------------
+        if(!file_exists(wire('config')->paths->assets.self::$cacheDir.DIRECTORY_SEPARATOR.$cacheFile) OR self::$developmentMode === true) {
+
+            // ------------------------------------------------------------------------
+            // Load the minimization Library
+            // ------------------------------------------------------------------------
+            // @source https://code.google.com/p/minify/source/browse/min/lib/JSMin.php?name=2.1.7
+            // @version 2.1.7
+            // @license MIT License (MIT)
+            // @description PHP implementation of Douglas Crockford's JSMin. This is 
+            //              pretty much a direct port of jsmin.c to PHP with just a few 
+            //              PHP-specific performance tweaks. Also, whereas jsmin.c reads 
+            //              from stdin and outputs to stdout, this library accepts a 
+            //              string as input and returns another string as output.
+            //------------------------------------------------------------------------
+            require_once(wire('config')->paths->AllInOneMinify.'lib'.DIRECTORY_SEPARATOR.'JSMin-v2.1.7.php');
+
+            // ------------------------------------------------------------------------
+            // Expire all CacheFiles
+            // ------------------------------------------------------------------------
+            if (class_exists('PageRender')) {
+                if (file_exists(wire('config')->paths->cache . PageRender::cacheDirName . "/")) CacheFile::removeAll(wire('config')->paths->cache . PageRender::cacheDirName . "/");
+            }
+
+            // ------------------------------------------------------------------------
+            // Initialize $_js variable for output
+            // ------------------------------------------------------------------------
+            $_js = '';
+
+            // ------------------------------------------------------------------------
+            // Load all content, minimize the contents and paste everything in a 
+            // Varibale together.
+            // ------------------------------------------------------------------------
+            foreach ($javascripts as $javascript) {
+                $_js_src    = file_get_contents($javascript['absolute_path']).PHP_EOL;
+                $_js_src    = (!empty($_js_src) AND self::$developmentMode !== true AND !self::_isMinimized($javascript['absolute_path'])) ? JSMin::minify($_js_src) : $_js_src;
+                $_js       .= $_js_src;
+            }
+
+            // ------------------------------------------------------------------------
+            // Write the minimized file to the file system.
+            // ------------------------------------------------------------------------
+            if (file_put_contents(wire('config')->paths->assets.self::$cacheDir.DIRECTORY_SEPARATOR.$cacheFile, self::_generatorInformation($_js), LOCK_EX) !== false) {
+                if(chmod(wire('config')->paths->assets.self::$cacheDir.DIRECTORY_SEPARATOR.$cacheFile, octdec(wire('config')->chmodFile)) === false) {
+                    throw new WireException('The permissions (chmod) for the combined js file could not be set. Verify that the permissions in the ProcessWire Configuration are sufficient ($config->chmodFile).');
+                }
+            } else {
+                throw new WireException('The combined js file can not be written. Check if the script has sufficient permissions.');
+            }
+        }
+
+        // ------------------------------------------------------------------------
+        // Return the absolute URL path to the minimized file.
+        // ------------------------------------------------------------------------
+        return (self::$developmentMode !== true) ? $assetDomain.'/'.$cacheFile : $assetDomain.'/'.$cacheFile.'?no-cache='.time();
+    }
+
+    /**
+     * ------------------------------------------------------------------------
+     * Minimization and combination of CSS files. Executable from the template 
+     * with automatic URL rewriting of the CSS URLs.
+     * ------------------------------------------------------------------------
+     * @param  mixed $stylesheets  Relative string from the template folder or an array with several files 
+     *                             relative to the template folder. For example: 'css/file.css' or 
+     *                             array('css/file1.css', 'css/file2.css')
+     *                             
+     * @example <link rel="stylesheet" href="<?php echo AllInOneMinify::CSS(array('css/file1.css', 'css/file2.css')); ?>">
+     * 
+     * @return string              URL string of the combined stylesheet file
+     */
+    public static function CSS($stylesheets) {
+
+        // ------------------------------------------------------------------------
+        // Check if at least one file was passed.
+        // ------------------------------------------------------------------------
+        if(empty($stylesheets)) throw new WireException('There were no files specified to minimize.');
+        
+        // ------------------------------------------------------------------------
+        // Check if files exist and generating the cache file name based 
+        // on the last editing of the file.
+        // ------------------------------------------------------------------------
+        $stylesheets    = is_array($stylesheets) ? $stylesheets : array($stylesheets);
+        $stylesheets    = self::_fileArray($stylesheets, array('.css', '.less'));
+        $cacheFile      = self::_getCacheName($stylesheets, self::$cssCachePrefix, '.css');
+        $assetDomain    = self::_getAssetDomain();
+
+        // ------------------------------------------------------------------------
+        // Check if there is already a combined and cached file. If not, 
+        // generating a new minimized cache file.
+        // ------------------------------------------------------------------------
+        if(!file_exists(wire('config')->paths->assets.self::$cacheDir.DIRECTORY_SEPARATOR.$cacheFile) OR self::$developmentMode === true) {
+
+            // ------------------------------------------------------------------------
+            // Load the css minimization Library
+            // ------------------------------------------------------------------------
+            // @version 1.1.2
+            // @license MIT License (MIT)
+            // @description CssMin is a css minfier. It minifies css by 
+            //              removing unneeded whitespace character, comments, empty 
+            //              blocks and empty declarations. In addition declaration 
+            //              values can get rewritten to shorter notation if available.
+            //------------------------------------------------------------------------
+            require_once(wire('config')->paths->AllInOneMinify.'lib'.DIRECTORY_SEPARATOR.'CSSMin-v1.1.2.php');
+
+            // ------------------------------------------------------------------------
+            // Load the URL Rewriting Library
+            // ------------------------------------------------------------------------
+            // @source https://code.google.com/p/minify/
+            // @docs https://code.google.com/p/minify/wiki/UriRewriting
+            // @version 2.1.7
+            // @license New BSD License
+            // @description This class uses an algorithm to rewrite relative URIs in CSS 
+            //              output to root-relative URIs so that each link points to the 
+            //              same location it did in its original file.
+            //------------------------------------------------------------------------
+            require_once(wire('config')->paths->AllInOneMinify.'lib'.DIRECTORY_SEPARATOR.'UriRewriter.php');
+
+            // ------------------------------------------------------------------------
+            // Load the LESS compiler Library
+            // ------------------------------------------------------------------------
+            // @source http://lessphp.gpeasy.com/
+            // @docs http://lessphp.gpeasy.com/
+            // @version 1.7.1
+            // @license Apache License 2.0
+            // @description This is a PHP port of the official LESS processor. The code 
+            //              structure of less.php mirrors that of the official processor 
+            //              which helps us ensure compatibility and allows for easy 
+            //              maintenance. Please note, there are a few unsupported LESS 
+            //              features: 
+            //              
+            //              - Evaluation of JavaScript expressions within back-ticks 
+            //                (for obvious reasons).
+            //              - Definition of custom functions.
+            //------------------------------------------------------------------------
+            require_once(wire('config')->paths->AllInOneMinify.'lib'.DIRECTORY_SEPARATOR.'Less'.DIRECTORY_SEPARATOR.'Less.php');
+
+            // ------------------------------------------------------------------------
+            // Expire all CacheFiles
+            // ------------------------------------------------------------------------
+            if (class_exists('PageRender')) {
+                if (file_exists(wire('config')->paths->cache . PageRender::cacheDirName . "/")) CacheFile::removeAll(wire('config')->paths->cache . PageRender::cacheDirName . "/");
+            }
+
+            // ------------------------------------------------------------------------
+            // Initialize $_css variable for output
+            // ------------------------------------------------------------------------
+            $_css       = '';
+
+            // ------------------------------------------------------------------------
+            // Load all content, minimize the contents, rewrite the URLs and paste 
+            // everything in a variable together.
+            // ------------------------------------------------------------------------
+            foreach ($stylesheets as $stylesheet) {
+
+                // ------------------------------------------------------------------------
+                // Load source of file and rewrite absolute URLs.
+                // ------------------------------------------------------------------------
+                $_css_src   = file_get_contents($stylesheet['absolute_path']).PHP_EOL;
+                $_css_src = (!empty($_css_src)) ? Minify_CSS_UriRewriter::rewrite($_css_src, dirname($stylesheet['absolute_path']),wire('config')->paths->root) : $_css_src;
+
+                // ------------------------------------------------------------------------
+                // If LESS file then run LESS parser.
+                // ------------------------------------------------------------------------
+                if($stylesheet['file_extension'] === 'less') {
+                    try {
+                        $_less_parser   = new Less_Parser();
+                        $_less_parser->parse($_css_src);
+                        $_css_src       = $_less_parser->getCss();
+
+                    } catch(Exception $error) {
+                        $_css_src       = '#_____LESS_____ERROR_____REPORT_____ {content:"'.$error->getMessage().'"}';
+                    }
+                }
+                
+                // ------------------------------------------------------------------------
+                // Minimize generated css 
+                // ------------------------------------------------------------------------
+                $_css_src   = (!empty($_css_src) AND self::$developmentMode !== true AND !self::_isMinimized($stylesheet['absolute_path'])) ? CssMin::minify($_css_src) : $_css_src;
+                $_css      .= $_css_src;
+            }
+
+            // ------------------------------------------------------------------------
+            // Write the minimized file to the file system.
+            // ------------------------------------------------------------------------
+            if (file_put_contents(wire('config')->paths->assets.self::$cacheDir.DIRECTORY_SEPARATOR.$cacheFile, self::_generatorInformation($_css), LOCK_EX) !== false) {
+                if(chmod(wire('config')->paths->assets.self::$cacheDir.DIRECTORY_SEPARATOR.$cacheFile, octdec(wire('config')->chmodFile)) === false) {
+                    throw new WireException('The permissions (chmod) for the combined CSS file could not be set. Verify that the permissions in the ProcessWire Configuration are sufficient ($config->chmodFile).');
+                }
+            } else {
+                throw new WireException('The combined CSS file can not be written. Check if the script has sufficient permissions.');
+            }
+        }
+
+        // ------------------------------------------------------------------------
+        // Return the absolute URL path to the minimized file.
+        // ------------------------------------------------------------------------
+        return (self::$developmentMode !== true) ? $assetDomain.'/'.$cacheFile : $assetDomain.'/'.$cacheFile.'?no-cache='.time();
+    }
+
+    /**
+     * ------------------------------------------------------------------------
+     * Check the already cached files according to its maximum lifetime. 
+     * If the files already exist longer than the maximum time to live, 
+     * they are deleted.
+     * ------------------------------------------------------------------------
+     * @param boolean $force_all Force Delete all the files in the cache folder.
+     */
+    private static function _clearCache($force_all = false) {
+        
+        // ------------------------------------------------------------------------
+        // Check if cache folder exist.
+        // ------------------------------------------------------------------------
+        $_this = new self();
+        $_this->___install();
+        
+        // ------------------------------------------------------------------------
+        // Generating a data iterator of the cache directory.
+        // ------------------------------------------------------------------------
+        $_cacheFiles = new RecursiveDirectoryIterator(wire('config')->paths->assets.self::$cacheDir.DIRECTORY_SEPARATOR);
+
+        // ------------------------------------------------------------------------
+        // Remove all files that are older than the maximum lifetime.
+        // ------------------------------------------------------------------------
+        foreach ($_cacheFiles as $_cacheFile) {
+            if (((filemtime(wire('config')->paths->assets.self::$cacheDir.DIRECTORY_SEPARATOR.$_cacheFile->getFilename()) + self::$cacheMaxLifetime) < time() OR $force_all === true) AND is_file($_cacheFile)) {
+                $_file  = wire('config')->paths->assets.self::$cacheDir.DIRECTORY_SEPARATOR.$_cacheFile->getFilename();
+                if(chmod($_file, 0777) !== false) {
+                    if(unlink($_file) === false) {
+                        throw new WireException('The old cache files could not be deleted.');
+                    }
+                } else {
+                    throw new WireException('The permissions (chmod) to delete old cache files could not be changed.');
+                }
+            }
+        }
+    }
+
+    /**
+     * ------------------------------------------------------------------------
+     * Generate Created Date and deliver back the data stream.
+     * ------------------------------------------------------------------------
+     * @param  string   $data   The minimized code
+     * @return string           The minimized with code generation information
+     */
+    private static function _generatorInformation($data) {
+        return (!empty($data)) ? '/** Generated: '.date('l, jS \of F Y, h:i:s A').' // Powered by AIOM+ (All In One Minify) created by David Karich **/'.PHP_EOL.$data : '';
+    }
+
+    /**
+     * ------------------------------------------------------------------------
+     * Create a unique file name, of the files to be combined, based on the 
+     * last modification.
+     * ------------------------------------------------------------------------
+     * @param  array    $files   An array of all files to be combined.
+     * @param  string   $prefix  The prefix of the generated cache file.
+     * @param  string   $ext     The file extension of the generated cache file.
+     * @return string            The unique file name of the cache file.
+     */
+    private static function _getCacheName($files, $prefix = 'css_', $ext = '.css') {
+        
+        // ------------------------------------------------------------------------
+        // Initialize timestamp variable.
+        // ------------------------------------------------------------------------
+        $_timestamp = '';
+
+        // ------------------------------------------------------------------------
+        // Combine all timestamps to one string.
+        // ------------------------------------------------------------------------
+        foreach ($files as $file) {
+            $_timestamp .= $file['last_modified'];
+        }
+
+        // ------------------------------------------------------------------------
+        // Create a unique MD5 file name with the specified prefix.
+        // ------------------------------------------------------------------------
+        return (self::$developmentMode !== true) ? $prefix.md5($_timestamp).$ext : $prefix.md5($_timestamp).'_dev'.$ext;
+    }
+
+    /**
+     * ------------------------------------------------------------------------
+     * Check if a file exists. If so, write the absolute path and the time 
+     * stamp of the last modification to an array.
+     * ------------------------------------------------------------------------
+     * @param  array $asset_files   An array of paths to the files.
+     * @return array                An array of absolute paths and modification 
+     *                              timestamps of the files.
+     */
+    private static function _fileArray($asset_files, $extension = '.css') {
+
+        // ------------------------------------------------------------------------
+        // Initialize allowed extension array, current page id and files array.
+        // ------------------------------------------------------------------------
+        $extension          = is_array($extension) ? $extension : array($extension);
+        $current_page_id    = wire('page')->id;
+        $_asset_files       = array();
+
+        // ------------------------------------------------------------------------
+        // Check each file on existence and remove paths to prevent from 
+        // Directory traversal attacks.
+        // ------------------------------------------------------------------------
+        foreach ($asset_files as $_asset_file) {
+
+            // ------------------------------------------------------------------------
+            // Conditional loading
+            // ------------------------------------------------------------------------
+            if(is_array($_asset_file) AND isset($_asset_file['loadOn']) AND isset($_asset_file['files'])) {
+
+                // ------------------------------------------------------------------------
+                // Find all page ids based on the passed selector.
+                // ------------------------------------------------------------------------
+                $conditional_pages = wire('pages')->find($_asset_file['loadOn'])->explode('id');
+                
+                // ------------------------------------------------------------------------
+                // Check if current page matched the conditional page id.
+                // ------------------------------------------------------------------------
+                if(in_array($current_page_id, $conditional_pages)) {
+                    if(is_array($_asset_file['files'])) {
+                        foreach ($_asset_file['files'] as $__asset_file) {
+                            array_push($_asset_files, self::_getFileInfoArray($__asset_file, $extension));
+                        }
+
+                    } else {
+                        array_push($_asset_files, self::_getFileInfoArray($_asset_file['files'], $extension));
+                    }
+                }
+
+            // ------------------------------------------------------------------------
+            // No condition, always load.
+            // ------------------------------------------------------------------------
+            } else {
+                array_push($_asset_files, self::_getFileInfoArray($_asset_file, $extension));
+            }
+        }
+
+        // ------------------------------------------------------------------------
+        // Return array with all valid file paths and timestamps.
+        // ------------------------------------------------------------------------
+        return $_asset_files;
+    }
+
+    /**
+     * ------------------------------------------------------------------------
+     * Create an array with absolute path, last modify date and file extension.
+     * ------------------------------------------------------------------------
+     * @param  string $_file        Asset file
+     * @param  array  $extension    Allowed file extensions
+     * @return array
+     */
+    private static function _getFileInfoArray($_file, $extension) {
+
+        // ------------------------------------------------------------------------
+        // Filter Directory Traversal (default: yes)
+        // ------------------------------------------------------------------------
+        $_path  = (self::$directoryTraversal !== true) ? str_ireplace(array('../', './', '%2e%2e%2f', '..%2F'), '', wire('config')->paths->templates.$_file) : wire('config')->paths->templates.$_file;
+        
+        // ------------------------------------------------------------------------
+        // Check existence and whether there is no external source.
+        // ------------------------------------------------------------------------
+        if(file_exists($_path) AND !stristr($_path, '//') AND self::_stristr_array_needle($_path, $extension)) {
+            return array('absolute_path'    => $_path, 
+                         'last_modified'    => filemtime($_path), 
+                         'file_extension'   => pathinfo($_path, PATHINFO_EXTENSION));
+        }
+    }
+
+    /**
+     * ------------------------------------------------------------------------
+     * Create an array with the number and the size of the cached data.
+     * ------------------------------------------------------------------------
+     * @return array Number and size of the cache data
+     */
+    private static function _getNumberOfCacheFiles() {
+
+        // ------------------------------------------------------------------------
+        // Generating a data iterator of the cache directory.
+        // ------------------------------------------------------------------------
+        $_cacheFiles    = new RecursiveDirectoryIterator(wire('config')->paths->assets.self::$cacheDir.DIRECTORY_SEPARATOR);
+
+        // ------------------------------------------------------------------------
+        // Initialize $_numberOfFiles and $_bytesTotal variable
+        // ------------------------------------------------------------------------
+        $_numberOfFiles = 0;
+        $_bytesTotal    = 0;
+
+        // ------------------------------------------------------------------------
+        // Number all the data together
+        // ------------------------------------------------------------------------
+        foreach ($_cacheFiles as $_cacheFile) {
+            if(is_file($_cacheFile)) {
+                $_numberOfFiles++;
+                $_bytesTotal    += $_cacheFile->getSize();
+            }
+        }
+
+        // ------------------------------------------------------------------------
+        // Formatting bytes in correct unit
+        // ------------------------------------------------------------------------
+        $label  = array('B', 'KB', 'MB', 'GB', 'TB', 'PB');
+        for ($i = 0; $_bytesTotal >= 1024 AND $i < (count($label) - 1); $_bytesTotal /= 1024, $i++);
+
+        // ------------------------------------------------------------------------
+        // Return an array with all cache data
+        // ------------------------------------------------------------------------
+        return array('numberOfFiles' => number_format($_numberOfFiles), 'bytesTotal' => round($_bytesTotal).' '.$label[$i]);
+    }
+
+    /**
+     * ------------------------------------------------------------------------
+     * Empty the cache from the backend
+     * ------------------------------------------------------------------------
+     * @param [type] $event
+     */
+    protected static function ClearCacheFromBackend($event) {
+
+        // ------------------------------------------------------------------------
+        // If the parameter and the template are correct, clear the cache.
+        // ------------------------------------------------------------------------
+        if(wire('input')->get('cache') == 'clear' AND $event->object->template == 'admin') {
+            
+            // ------------------------------------------------------------------------
+            // Clear cache.
+            // ------------------------------------------------------------------------
+            self::_clearCache(true);
+
+            // ------------------------------------------------------------------------
+            // Redirect to module configuration.
+            // ------------------------------------------------------------------------
+            wire('session')->redirect($event->object->httpUrl.'edit?name='.wire('input')->get('name'));
+        }
+    }
+
+    /**
+     * ------------------------------------------------------------------------
+     * Check if the current template requires SSL and write it to the 
+     * module configuration.
+     * ------------------------------------------------------------------------
+     * @param [type] $event
+     */
+    protected static function CheckSSL($event) {
+        self::$templateUseSSL = ($event->object->template->https === 1) ? true : false;
+    }
+
+    /**
+     * ------------------------------------------------------------------------
+     * Create the Asset URL.
+     * ------------------------------------------------------------------------
+     * @return string The asset URL.
+     */
+    private static function _getAssetDomain() {
+
+        // ------------------------------------------------------------------------
+        // If the template requires SSL.
+        // ------------------------------------------------------------------------
+        if(self::$templateUseSSL === true) {
+            return self::$domainShardingSSL.wire('config')->urls->assets.self::$cacheDir;
+
+        // ------------------------------------------------------------------------
+        // Else the default domain.
+        // ------------------------------------------------------------------------
+        } else {
+            return self::$domainSharding.wire('config')->urls->assets.self::$cacheDir;
+        }
+    }
+
+    /**
+     * ------------------------------------------------------------------------
+     * Validate the numeric value for the maximum cache lifetime.
+     * ------------------------------------------------------------------------
+     * @param  integer $value integer
+     * @return integer        Valide integer or default value
+     */
+    private static function _sanitizeNumericCacheTime($value) {
+        
+        // ------------------------------------------------------------------------
+        // Convert the value to an integer.
+        // ------------------------------------------------------------------------
+        $value  = intval($value);
+
+        // ------------------------------------------------------------------------
+        // If the value is not an integer, return the default value.
+        // ------------------------------------------------------------------------
+        if(!is_int($value)) return 2419200;
+
+        // ------------------------------------------------------------------------
+        // If the value is less than 1 minute or greater than 1 year, 
+        // return the default value.
+        // ------------------------------------------------------------------------
+        if($value < 60 OR $value > 31536000) return 2419200;
+
+        // ------------------------------------------------------------------------
+        // Return valide integer
+        // ------------------------------------------------------------------------
+        return $value;
+    }
+
+    /**
+     * ------------------------------------------------------------------------
+     * Checks if the string is a valid URL.
+     * ------------------------------------------------------------------------
+     * @param  string $url The URL to be checked
+     * @return string      The valid URL or empty
+     */
+    private static function _validateURL($url) {
+
+        // ------------------------------------------------------------------------
+        // Validate string
+        // ------------------------------------------------------------------------
+        $_url   = wire('sanitizer')->url($url);
+        $_url   = (substr($_url, -1) == '/') ? substr($_url, 0, strlen($_url) - 1) : $_url;
+
+        // ------------------------------------------------------------------------
+        // Return valid URL or empty string
+        // ------------------------------------------------------------------------
+        return $_url;
+    }
+
+    /**
+     * ------------------------------------------------------------------------
+     * Checks if ".min" or "-min" at the end of the file name exists.
+     * ------------------------------------------------------------------------
+     * @param  string  $absolute_path Path with filename
+     * @return boolean
+     */
+    private static function _isMinimized($absolute_path) {
+        return (preg_match('/^([a-z0-9\-\_\.]*)(\.|\-)?min\.(js|css){1}$/i', strtolower(basename($absolute_path))) === 0) ? false : true; 
+    }
+
+    /**
+     * ------------------------------------------------------------------------
+     * Check if an array with given extension matches in a string
+     * ------------------------------------------------------------------------
+     * @param  string $haystack     Haystack to search
+     * @param  array  $arrayNeedles Array with extension to search
+     * @return boolean
+     */
+    private static function _stristr_array_needle($haystack, $arrayNeedles) {
+        foreach($arrayNeedles as $needle){
+            if(stristr($haystack, $needle)) return true;
+        }
+        return false;
+    }
+
+    /**
+     * ------------------------------------------------------------------------
+     * Minify HTML but protect textareas, code fields and conditional comments 
+     * for Internet Explorer. Optional minify inline stylesheets and javascript.
+     * ------------------------------------------------------------------------
+     * @param  [type] $event
+     * @return [type]
+     */
+    protected function HTML($event) {
+
+        // ------------------------------------------------------------------------
+        // Don't process the admin pages
+        // ------------------------------------------------------------------------
+        if($event->object->template == 'admin' OR self::$enableHTMLMinify !== true OR self::$developmentMode === true) return;
+
+        // ------------------------------------------------------------------------
+        // Minify HTML source code
+        // ------------------------------------------------------------------------
+        $event->return = preg_replace('/<!--(?!\s*(?:\[if [^\]]+]|<!|>))(?:(?!-->).)*-->/s', '', $event->return);
+        $event->return = preg_replace('/>\s+</s', '><', $event->return);
+    }
+}
+
+/**
+ * ------------------------------------------------------------------------
+ * Short-Syntax
+ * ------------------------------------------------------------------------
+ */
+class AIOM extends AllInOneMinify {}

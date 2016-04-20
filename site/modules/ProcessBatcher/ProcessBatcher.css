@@ -1,0 +1,34 @@
+#wrap_changeParent,
+#wrap_changeTemplate {
+	display: none; 
+}
+
+#wrap_Inputfield_filters .ui-widget-content {
+	padding-bottom: 24px;
+}
+
+table.batcher_pages tr > td {
+	padding-right: 10px;
+}
+
+table.batcher_pages tr th {
+	padding-right: 5px;
+}
+
+table.batcher_create tr td {
+	padding-right: 15px;
+	vertical-align: middle;
+}
+
+table.batcher_create tr td:last-child {
+	text-align: right;
+}
+
+.batcher_small {
+	font-size: 10px;
+}
+
+.red  { 
+	color: red; 
+}
+

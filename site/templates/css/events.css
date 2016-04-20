@@ -1,0 +1,325 @@
+/**************************************************************************
+ * Basic Styles
+ *************************************************************************/
+
+
+.ui-selectmenu {
+    float:right;
+}
+
+/** Controls - Controls are separate for cal/list views because they have very different markup **/
+
+/* list controls */
+
+.list-month
+{
+  margin-top: 60px;
+}
+
+.list-controls{
+  float:left;
+  margin-top: -40px;
+  margin-bottom: 10px;
+  text-align:center;
+  display:none;
+}
+
+
+.list-month-title{
+  position: relative;
+  margin:0;
+  float:left;
+  line-height: 1.3em;
+}
+
+.list-event-prev{
+  color:#3789cb;
+  font-size: 22px;
+  margin-right: 25px;
+  float:left;
+  display: none;
+  margin-top: 10px;
+}
+
+.list-event-next{
+  color:#3789cb;
+  margin-left: 25px;
+font-size: 22px;
+  float:left;
+display: none;
+ margin-top: 10px;
+}
+
+.list-event-prev.hasPrev{
+  display: inline-block;
+  cursor:pointer;
+
+}
+
+.list-event-next.hasNext{
+  display: inline-block;
+  cursor:pointer;
+}
+
+
+
+
+
+/* ---------- List ---------- */
+
+.list-day
+{
+  margin-bottom:50px;
+  border-bottom: 1px solid #efefef;
+}
+
+.list-time{
+
+  font-family: "Avenir LT W01_65 Medium",Helvetica, Arial, sans-serif;
+  width:65px;
+  float:left;
+  margin-right:-100px;
+  text-align:center;
+  text-transform:uppercase;
+  line-height:1.3;
+  border:3px solid #bb8d08;
+}
+
+.list-time-dayofweek
+{
+   padding: 5px 0 4px 0;
+
+}
+
+.list-time-day{
+    padding: 0px 0 4px 0;
+}
+
+.list-time-month{
+  padding:4px 0 1px 0;
+}
+
+.list-day-detail{
+  padding-left:100px;
+}
+
+.list-day-detail h3
+{
+  margin-top: 0;
+  padding-top: 0;
+  line-height: 1.11em;
+}
+
+
+.list-weekday{
+  line-height:1.1;
+  font-size:24px;
+  color:#999999;
+  border-bottom:1px solid;
+  border-color:#999999;
+  padding:10px 0 10px 0;
+  margin-bottom:30px;
+}
+
+.nrf-message{
+  text-align:center;
+}
+
+.day-stage{
+  margin-top:20px;
+}
+
+
+
+
+/* -------- Calendar ------- */
+#cal-responsive{
+  display:none;
+}
+
+.calendar a {
+    border: 0 !important;
+}
+
+.calendar{
+  width:100%;
+  table-layout:fixed;
+  background: white;
+}
+.calendar th{
+  text-align:center;
+  padding:10px;
+  line-height:1.1;
+}
+.calendar td{
+  padding:3px;
+  min-height:155px !important; /* will grow ... not sure how but it does */
+  height:155px;
+  border:1px solid;
+  vertical-align:top;
+}
+.calendar td  > a{ /* this is the clickable number */
+  text-decoration:none;
+  line-height:1.1;
+  display:block;
+  padding:3px;
+  float:left;
+  margin-bottom:5px;
+}
+
+.calendar td ul{
+  margin:0 0 0 15px;
+  padding:0;
+  clear:both;
+}
+
+.calendar td ul li{
+  margin:0 0 15px 0;
+  line-height:1.1;
+}
+
+
+/**************************************************************************
+ * Seach field
+ *************************************************************************/
+#event_categories div{
+  float:left;
+}
+
+
+
+/**************************************************************************
+ * Font & Sizing
+ *************************************************************************/
+
+
+
+.calendar th{
+  font-size:17px;
+}
+.calendar td{ /* this is the number */
+ font-size:13px;
+}
+
+.calendar td ul li{
+  font-size:12px;
+}
+.calendar-month{
+  font-size:22px;
+}
+
+.calendar-day
+{
+
+}
+
+.calendar-day-number
+{
+  display:inline-block;
+  padding:3px 6px;
+  background-color:white;
+  margin-bottom: 5px;
+}
+
+.today
+{
+  background-color:#efefef;
+}
+
+.list-time-day{
+  font-size:28px;
+}
+.featured-description p{
+  font-size:12px;
+}
+
+.featured-start{
+  font-size:14px;
+}
+
+.featured-event .meta{
+  font-size:12px;
+}
+
+ /**************************************************************************
+ * Colors
+ ***************************************************************************/
+
+.calendar-month,
+.list-month-title{
+
+}
+
+
+.calendar th{
+  background-color:#444444;
+  color:#ffffff;
+}
+.calendar td{
+  border-color:#dfdfdf;
+  min-height: 180px !important;
+}
+.calendar td  > a{ /* this is the number */
+  color:#444444;
+}
+.calendar td  > a:hover{
+  color:#ffffff;
+  background-color:#bb8d08; /* link color */
+}
+
+.list-time-day{
+  color:#ffffff;
+  background-color:#bb8d08;
+}
+
+.list-time-month{
+  background-color:#bb8d08; /* link color */
+  color:#ffffff;
+}
+
+
+
+.featured-description:hover{
+  background-color:#444444; /* for older browsers */
+  background-color:rgba(80,80,80,.9);
+}
+
+.featured-description:hover p{
+  color:#ffffff;
+}
+
+.featured-start{
+  color:#bb8d08; /*link color (or accent color imo)*/
+}
+
+.meta{
+  color:#232323; /*text color*/
+}
+
+/**************************************************************************
+ * Common Overrides
+ *************************************************************************/
+.calendar td ul li{
+  list-style:none;
+  font-size: 1.2em;
+  line-height: 1.29em;
+  padding:0px 8px 0px 0px;
+}
+
+
+.calendar td ul li a{
+  text-decoration:none;
+}
+article.event
+{
+
+  margin-bottom: 32px;
+}
+
+.event h3{
+  margin-bottom:5px;
+}
+
+/* For image replacement */
+.ir { display: block; border: 0; text-indent: -999em; overflow: hidden; background-color: transparent; background-repeat: no-repeat; text-align: left; direction: ltr; }
+.ir br { display: none; }

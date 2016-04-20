@@ -1,0 +1,310 @@
+<?php
+
+/**
+ * ProcessWire Markup iCalendar Module 0.1
+ *
+ * Given a PageArray of pages, this module will render an iCalendar feed from them.
+ * This is intended to be used directly from a template file. See usage below.
+ *
+ * The module uses the excellent iCalcreator library from http://www.kigkonsult.se/iCalcreator/
+ * for creating the ICS feed itself and as such mostly just acts as a simple wrapper.
+ *
+ * USAGE
+ * -----
+ * $ics = $modules->get("MarkupiCalendar");
+ * $ics->title = "Upcoming Events";
+ * $ics->description = "Some upcoming events";
+ * $ics->itemDateField = 'date';
+ * $today = time();
+ * $items = $pages->find("template=event, limit=30, sort=date, date>$today"); // or any pages you want
+ * $ics->render($items);
+ *
+ * See also the $defaultConfigData below (first thing in the class) to see what
+ * options you can change at runtime.
+ *
+ *
+ * Copyright (C) 2011 by Stephen Tomlinson
+ * This module is licensed under Apache License v2.0, see LICENSE.TXT within the module folder.
+ * The iCalcreator library is licensed under the LPGL
+ *
+ * http://twitter.com/ffub
+ *
+ */
+
+require_once("iCalcreator/iCalcreator.class.php");
+
+class MarkupiCalendar extends WireData implements Module {
+
+	protected static $defaultConfigData = array(
+		'title' => 'Untitled iCal Feed',
+		'url' => '',
+		'description' => '',
+		'filename' => '',
+		'itemSummaryField' => 'title',
+		'itemDescriptionField' => 'summary',
+		'itemLocationField' => false,
+		'itemStartDateField' => 'created',
+		'itemEndDateField' => false,
+		'feedPages' => array(),
+		'timezone' => false
+	);
+
+	/**
+	 * Return general info about the module for ProcessWire
+	 *
+	 */
+	public static function getModuleInfo() {
+		return array(
+			'title' => 'Markup iCalendar',
+			'version' => 001,
+			'summary' => 'Renders an iCalendar feed. Given a PageArray, renders an iCalendar feed of events based on the pages.',
+			'permanent' => false,
+			'singular' => false,
+			'autoload' => false,
+			);
+	}
+
+	/**
+	 * Set the default config data
+	 *
+	 */
+	public function __construct() {
+		foreach(self::$defaultConfigData as $key => $value) {
+			$this->set($key, $value);
+		}
+	}
+
+	/**
+	 * Necessary to fulfill Module interface, even though not using it currently
+	 *
+	 */
+	public function init() {
+		if(!$this->timezone) $this->timezone = $this->config->timezone;
+	}
+
+	/**
+	 * Return the date as an array (possibly use getdate?)
+	 *
+	 */
+	protected function ical_date($date) {
+		$r = array(
+			'year' => (int) date("Y",$date),
+			'month' => (int) date("m",$date),
+			'day' => (int) date("d",$date),
+			'hour' => (int) date("H",$date),
+			'min' => (int) date("i",$date),
+			'sec' => (int) date("s",$date)
+		);
+		return $r;
+	}
+
+	/**
+	 * Create the iCal feed
+	 *
+	 */
+	protected function createFeed(PageArray $feedPages = null) {
+
+		// Create the calendar feed
+		$config = array("unique_id" => $_SERVER['SERVER_NAME']);
+		$vcalendar = new vcalendar($config);
+		$vcalendar->setProperty("method","PUBLISH");
+		$vcalendar->setProperty("calscale","GREGORIAN");
+		$vcalendar->setProperty("x-wr-calname",$this->title);
+		$vcalendar->setProperty("x-wr-caldesc",$this->description);
+		$vcalendar->setProperty("x-wr-timezone",$this->timezone);
+
+
+
+		// Add events
+		foreach($feedPages as $event) {
+			$vevent = & $vcalendar->newComponent('vevent');
+			$vevent->setProperty('last-modified', $this->ical_date($event->modified));
+			$vevent->setProperty('created', $this->ical_date($event->created));
+
+			$event_date = $event->event_date;
+			$event_date_end = $event->event_date_end;
+
+			if($event->template == 'event_repeater')
+			{
+				// if its a repeater, grab the start time and end time from the parent event.
+				$event_date = date("Y-m-d", strtotime($event->event_date));
+				$event_date .= " ".date("H:i:s", strtotime($event->parent->event_date));
+
+				$event_date_end = date("Y-m-d", strtotime($event->event_date));
+				$event_date_end .= " ".date("H:i:s",strtotime($event->parent->event_date_end));
+			}
+			$timezone = new DateTimeZone('America/New_York');
+			$start_date = new DateTime( $event_date, $timezone ); // this will be in the server's time zone
+			///$start_date->setTimezone(new DateTimeZone('GMT'));
+			$start_date->setTimezone( new DateTimeZone('UTC') ); // Universal / Zulu time
+			$tzid_start = $start_date->format( 'Ymd\THis\Z' );
+
+			//$vevent->setProperty('dtstart', $tzid_start,array("TZID" => "America/New_York"));
+
+			$vevent->setProperty('dtstart', $tzid_start);
+
+
+			if( $event_date != $event_date_end )
+			{
+				$timezone = new DateTimeZone('America/New_York');
+				$end_date = new Datetime( $event_date_end, $timezone );
+				$end_date->setTimezone( new DateTimeZone('UTC') );
+				$tzid_end = $end_date->format( 'Ymd\THis\Z' );
+				 // Universal / Zulu time
+				//$tzid_end->setTimezone(new DateTimeZone('GMT'));
+				//$vevent->setProperty('dtend', $tzid_end,array("TZID" => "America/New_York"));
+				$vevent->setProperty('dtend', $tzid_end);
+			}
+			else
+			{
+				//default to two hours after
+				$timestamp_new = strtotime($event_date_end) + 7200;
+				$event_date_end_updated = date("Y-m-d H:i:s", $timestamp_new );
+
+				$timezone = new DateTimeZone('America/New_York');
+				$end_date = new Datetime( $event_date_end_updated, $timezone );
+				$end_date->setTimezone( new DateTimeZone('UTC') );
+				$tzid_end = $end_date->format( 'Ymd\THis\Z' );
+				 // Universal / Zulu time
+				//$tzid_end->setTimezone(new DateTimeZone('GMT'));
+				//$vevent->setProperty('dtend', $tzid_end,array("TZID" => "America/New_York"));
+				$vevent->setProperty('dtend', $tzid_end);
+			}
+
+			$address ='';
+			$url = '';
+
+			if($event->template == 'event-repeater')
+			{
+			   $loc_name = preg_replace_callback("/(&#[0-9]+;)/", function($m) { return mb_convert_encoding($m[1], "UTF-8", "HTML-ENTITIES"); }, $event->parent->location->title);
+
+			  $address = $event->parent->location->address;
+			  if( $address == '' && $event->parent->event_custom_address != '') $address = $event->parent->event_custom_address;
+
+	          if( $event->parent->event_room != '')
+	          {
+	            $loc_name .= " - ".$event->parent->event_room;
+	          }
+	          $loc_name .= " - " .$address;
+	          $summary = preg_replace_callback("/(&#[0-9]+;)/", function($m) { return mb_convert_encoding($m[1], "UTF-8", "HTML-ENTITIES"); }, $event->parent->title);
+
+
+	          $body = strip_tags($event->parent->body);
+	          //$url = $event->parent->httpUrl;
+
+	          if( $event->parent->event_registration_link != ''){
+
+	          	if(  substr($event->parent->event_registration_link, 0, 1) == '/'  )
+	          	{
+	          		$url =  "http://".wire('config')->httpHost.$event->parent->event_registration_link;
+	          	}
+	          	else
+	          	{
+	          		$url = $event->parent->event_registration_link;
+	          	}
+
+
+	          }
+			}
+			else
+			{
+			  $loc_name = preg_replace_callback("/(&#[0-9]+;)/", function($m) { return mb_convert_encoding($m[1], "UTF-8", "HTML-ENTITIES"); }, $event->location->title);
+
+			  $address = $event->location->address;
+			  if( $address == '' && $event->event_custom_address != '') $address = $event->event_custom_address;
+
+	          if( $event->event_room != '')
+	          {
+	            $loc_name .= " - ".$event->event_room;
+	          }
+	          $loc_name .= " - " .$address;
+	          $summary = preg_replace_callback("/(&#[0-9]+;)/", function($m) { return mb_convert_encoding($m[1], "UTF-8", "HTML-ENTITIES"); }, $event->title);
+	          //$summary = "OVerride";
+	          $body = strip_tags($event->body);
+
+	          if( $event->event_registration_link != ''){
+
+	          	if(  substr($event->event_registration_link, 0, 1) == '/'  )
+	          	{
+	          		$url = "http://".wire('config')->httpHost.$event->event_registration_link;
+	          	}
+	          	else
+	          	{
+	          		$url = $event->event_registration_link;
+	          	}
+
+
+	          }
+			}
+
+
+	        //$loc_full = $campus.$loc_name;
+			if( $address != '')
+			{
+				$vevent->setProperty('location',$loc_name);
+			}
+
+
+
+			$vevent->setProperty('summary',$summary);
+			$vevent->setProperty('description',$body);
+			if( $url != '')
+				$vevent->setProperty('url', $url);
+		}
+
+
+
+		$this->vcal = $vcalendar;
+
+		/// set config of file name
+		if($this->filename != '')
+		{
+			$this->vcal->setConfig('FILENAME', $this->filename.".ics");
+		}
+		else
+		{
+			$this->vcal->setConfig('FILENAME', $summary.".ics");
+		}
+
+		return true;
+
+	}
+
+
+
+	/**
+	 * Return the feed
+	 *
+	 */
+	public function renderFeed(PageArray $feedPages = null) {
+
+		if(!is_null($feedPages)) $this->feedPages = $feedPages;
+		$this->createFeed($feedPages);
+		$cal = $this->vcal->createCalendar();
+		return $cal;
+
+	}
+
+	/**
+	 * Echo the feed this (with proper http headers)
+	 *
+	 */
+	public function render(PageArray $feedPages = null) {
+
+		if(!is_null($feedPages)) $this->feedPages = $feedPages;
+		$this->createFeed($feedPages);
+		$cal = $this->vcal->returnCalendar();
+		return true;
+	}
+
+	public function saveFeed(PageArray $feedPages = null) {
+
+		if(!is_null($feedPages)) $this->feedPages = $feedPages;
+		$this->createFeed($feedPages);
+		$cal = $this->vcal->saveCalendar( wire('config')->paths->assets."ical/" );
+		return true;
+	}
+
+}
+
+

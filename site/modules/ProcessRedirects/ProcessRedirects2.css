@@ -1,0 +1,19 @@
+#redirects_form {
+	margin-bottom: 3em;
+}
+
+#redirects_form p {
+	float: left;
+	margin: 0;
+	margin-bottom: 1em;
+}
+
+#redirects_form p button {
+	margin-bottom: 1em;
+	float: left;
+}
+
+#submit_delete {
+	float: right;
+	margin-right: 0;
+}

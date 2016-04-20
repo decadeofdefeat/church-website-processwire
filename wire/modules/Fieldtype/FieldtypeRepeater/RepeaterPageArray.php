@@ -1,0 +1,108 @@
+<?php
+
+/**
+ * ProcessWire Repeater Page Array 
+ *
+ * Special PageArray for use by repeaters that includes a getNewItem() method
+ *
+ * ProcessWire 2.x 
+ * Copyright (C) 2015 by Ryan Cramer 
+ * This file licensed under Mozilla Public License v2.0 http://mozilla.org/MPL/2.0/
+ * 
+ * https://processwire.com
+ *
+ */
+
+class RepeaterPageArray extends PageArray {
+
+	/**
+	 * The page that contains the repeater field (not the parent in the repeaters structure)
+	 *
+	 */ 
+	protected $parent = null;
+
+	/**
+	 * The repeater field (from $this->fields API var)
+	 *
+	 */
+	protected $field = null;
+
+	public function __construct(Page $parent, Field $field) {
+		$this->setParent($parent);
+		$this->setField($field); 
+	}
+
+	public function setParent(Page $parent) { $this->parent = $parent; }
+	public function getParent() { return $this->parent; }
+	public function setField(Field $field) { $this->field = $field; }
+	public function getField() { return $this->field; }
+
+	/**
+	 * Alias of getNewItem() kept for backwards compatibility
+	 *
+	 */
+	public function getNew() { return $this->getNewItem(); }
+
+	/**
+	 * Return a new repeater item ready for use
+	 *
+ 	 * If there are ready items, it will return the first ready item
+	 * Otherwise it'll create a new item
+	 *
+ 	 * This method is different from FieldtypeRepeater::getBlankRepeaterPage: 
+	 * 1. It returns an already existing readyPage, if it exists (otherwise it creates a new page)
+	 * 2. The returned page is in a non-hidden published state, so will appear as soon as it is saved
+	 *
+	 * Note that this method has no relation/similarity to the makeNew() method.
+	 *
+	 * @return Page
+	 *
+	 */
+	public function getNewItem() {
+
+		$page = null;
+		$of = $this->parent->of(false); 
+
+		// first try to get a ready item, if available
+		foreach($this as $item) {
+			if($item->hasStatus(Page::statusUnpublished) && $item->hasStatus(Page::statusHidden)) {
+				$page = $item;
+				break;
+			}
+		}
+
+		if(is_null($page)) { 
+			// no ready item available, get a new one
+			$page = $this->field->type->getBlankRepeaterPage($this->parent, $this->field); 
+			$this->add($page);
+		} else {
+			$this->trackChange('add');
+		}
+
+		$page->of(false);
+		$page->removeStatus(Page::statusUnpublished); 
+		$page->removeStatus(Page::statusHidden); 
+		$page->sort = $this->count();
+
+		if($of) $this->parent->of(true);
+
+		return $page;
+	}
+
+	/**
+	 * Creates a new blank instance of a RepeaterPageArray. For internal use. 
+	 * 
+	 * Note that this method has no relation/similarity to the getNewItem()/getNew() methods.
+	 *
+	 * @return WireArray
+	 *
+	 */
+	public function makeNew() {
+		$class = get_class($this);
+		$newArray = new $class($this->parent, $this->field);
+		return $newArray;
+	}
+
+	
+}
+
