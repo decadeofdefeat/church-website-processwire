@@ -19,8 +19,8 @@ You can reset the password by visiting /admin/profile/ after you install the web
 If you have any questions about this church website, please tweet me [@markagoldsmith](https://twitter.com/markagoldsmith)
 
 **Credit where credit is due:**<br/>
-Thomas Planer : When - http://github.com/tplaner/When
-Julian calendar class - https://github.com/jamierumbelow/julian
+Thomas Planer : When - http://github.com/tplaner/When<br/>
+Julian calendar class - https://github.com/jamierumbelow/julian<br/>
 Stephen Tomlinson iCal Markup class - https://github.com/ffub/MarkupiCalendar
 
 
