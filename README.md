@@ -16,6 +16,8 @@ yoursite.com/admin<br/>
 
 You can reset the password by visiting /admin/profile/ after you install the website!
 
+**Please Note:** A set of icon fonts are included with this project. Please purchase the Flat Icons license if you want to use them for your website - https://flaticons.co
+
 If you have any questions about this church website, please tweet me [@markagoldsmith](https://twitter.com/markagoldsmith)
 
 **Credit where credit is due:**<br/>
