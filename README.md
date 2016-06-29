@@ -3,7 +3,7 @@ A fully functional church website built on ProcessWire featuring sermons, blog, 
 
 To preview the example website, visit http://church.markgoldsmith.me
 
-**UPDATE 6/28/2016**
+**UPDATE 6/28/2016**<br/>
 Added a multi-section page with a sidebar. For a preview, visit http://church.markgoldsmith.me/baptism-membership
 
 Included in this repository is the church.sql database file which has all the preloaded content shown on the example website.
@@ -17,7 +17,7 @@ yoursite.com/admin<br/>
 **Username:** admin<br/>
 **Password:** Tz2$14#
 
-You can reset the password by visiting /admin/profile/ after you install the website!
+You can reset the password and admin email address by visiting /admin/profile/ after you install the website!
 
 **Please Note:** A set of icon fonts are included with this project. Please purchase the Flat Icons license if you want to use them for your website - https://flaticons.co
 

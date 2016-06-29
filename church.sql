@@ -3,7 +3,7 @@
 -- http://www.phpmyadmin.net
 --
 -- Host: localhost:3306
--- Generation Time: Jun 28, 2016 at 10:10 PM
+-- Generation Time: Jun 28, 2016 at 10:17 PM
 -- Server version: 10.1.14-MariaDB
 -- PHP Version: 5.4.31
 
@@ -637,7 +637,7 @@ CREATE TABLE IF NOT EXISTS `field_email` (
 --
 
 INSERT INTO `field_email` (`pages_id`, `data`) VALUES
-(41, 'ceasetodream@gmail.com'),
+(41, 'admin@yoursite.com'),
 (1291, 'hhunter@crosspointchurch.church'),
 (1292, 'sparker@crosspointchurch.church'),
 (1293, 'wforeman@crosspointchurch.church'),
@@ -3148,7 +3148,7 @@ INSERT INTO `pages` (`id`, `parent_id`, `templates_id`, `name`, `status`, `modif
 (36, 31, 5, 'page-view', 25, '2011-09-06 19:34:14', 41, '2011-03-19 23:17:57', 2, '2011-03-19 19:17:57', 0),
 (37, 30, 4, 'guest', 25, '2011-04-05 05:37:19', 41, '2011-03-19 23:18:41', 2, '2011-03-19 19:18:41', 0),
 (38, 30, 4, 'superuser', 25, '2011-08-17 18:34:39', 41, '2011-03-19 23:18:55', 2, '2011-03-19 19:18:55', 1),
-(41, 29, 3, 'admin', 1, '2016-04-19 17:00:16', 41, '2011-03-19 23:41:26', 2, '2011-03-19 19:41:26', 0),
+(41, 29, 3, 'admin', 1, '2016-06-29 02:17:54', 41, '2011-03-19 23:41:26', 2, '2011-03-19 19:41:26', 0),
 (40, 29, 3, 'guest', 25, '2011-08-17 18:26:09', 41, '2011-03-20 21:31:59', 2, '2011-03-20 17:31:59', 1),
 (50, 31, 5, 'page-sort', 25, '2011-09-06 19:34:58', 41, '2011-03-27 02:04:50', 41, '2011-03-26 22:04:50', 5),
 (51, 31, 5, 'page-template', 25, '2011-09-06 19:35:09', 41, '2011-03-27 02:25:31', 41, '2011-03-26 22:25:31', 6),
