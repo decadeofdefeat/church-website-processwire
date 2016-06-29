@@ -3,7 +3,7 @@
 
 $homepage = wire('pages')->get("/");
 
-$root = realpath($_SERVER["DOCUMENT_ROOT"]);]
+$root = realpath($_SERVER["DOCUMENT_ROOT"]);
 require_once("./includes/functions.inc"); // include our shared functions
 
 
