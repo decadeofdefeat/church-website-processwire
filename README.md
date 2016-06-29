@@ -3,7 +3,10 @@ A fully functional church website built on ProcessWire featuring sermons, blog, 
 
 To preview the example website, visit http://church.markgoldsmith.me
 
-Included in this repository is the .sql database file which has all the preloaded content shown on the example website.
+**UPDATE 6/28/2016**
+Added a multi-section page with a sidebar. For a preview, visit http://church.markgoldsmith.me/baptism-membership
+
+Included in this repository is the church.sql database file which has all the preloaded content shown on the example website.
 
 For instructions on installing ProcessWire (version 2.7), visit https://github.com/ryancramerdesign/ProcessWire/
 

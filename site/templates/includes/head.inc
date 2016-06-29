@@ -3,14 +3,12 @@
 
 $homepage = wire('pages')->get("/");
 
-$root = realpath($_SERVER["DOCUMENT_ROOT"]);
-require_once( $root ."/site/templates/includes/functions.inc");
+$root = realpath($_SERVER["DOCUMENT_ROOT"]);]
+require_once("./includes/functions.inc"); // include our shared functions
 
 
 $live = false;
 if(wire('config')->live) $live = true;
-// if you're on the live page, don't show the live top alert
-if(wire('page')->id == 7887) $live = false;
 
 $liveHome = false;
 
@@ -123,8 +121,7 @@ if(wire('page')->template == 'home'){
     <link href='//fonts.googleapis.com/css?family=Noticia+Text:400,400italic,700,700italic|Open+Sans:100,200,300,400,600,700,800,400italic&subset=latin,latin-ext' rel='stylesheet' type='text/css'>
    <!-- styles -->
    <link rel="stylesheet" href="<?php echo AIOM::CSS(array(
-          'css/bootstrap.css','css/magnific-popup.css','css/audioplayer.css',
-          'css/site-helpers.css', 'css/icon-font.css','css/site.css', 'css/events.css'
+          'css/bootstrap.css','css/site-helpers.css', 'css/icon-font.css','css/site.css', 'css/events.css'
           )); ?>">
 
 
@@ -236,6 +233,9 @@ if(wire('page')->template == 'home'){
 
                                     <li ><a href='/events/' >Events <span class="icon-right-circle-12"></span></a></li>
                                     <li ><a href='/serve/' >Serve <span class="icon-right-circle-12"></span></a></li>
+
+                                     <li ><a href='/baptism-membership/' >Multi-section <span class="icon-right-circle-12"></span></a></li>
+
 
                                   </ul>
                                 </li>

@@ -1,10 +1,10 @@
 -- phpMyAdmin SQL Dump
--- version 4.0.10.7
+-- version 4.0.10.14
 -- http://www.phpmyadmin.net
 --
 -- Host: localhost:3306
--- Generation Time: Apr 20, 2016 at 03:25 PM
--- Server version: 10.1.13-MariaDB
+-- Generation Time: Jun 28, 2016 at 10:10 PM
+-- Server version: 10.1.14-MariaDB
 -- PHP Version: 5.4.31
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
@@ -17,7 +17,7 @@ SET time_zone = "+00:00";
 /*!40101 SET NAMES utf8 */;
 
 --
--- Database: `cfbjvjkv_church`
+-- Database: `church`
 --
 
 -- --------------------------------------------------------
@@ -58,7 +58,7 @@ CREATE TABLE IF NOT EXISTS `fieldgroups` (
   `name` varchar(255) CHARACTER SET ascii NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `name` (`name`)
-) ENGINE=MyISAM  DEFAULT CHARSET=utf8 AUTO_INCREMENT=182 ;
+) ENGINE=MyISAM  DEFAULT CHARSET=utf8 AUTO_INCREMENT=185 ;
 
 --
 -- Dumping data for table `fieldgroups`
@@ -135,7 +135,10 @@ INSERT INTO `fieldgroups` (`id`, `name`) VALUES
 (177, 'media-speaker'),
 (180, 'event-repeater'),
 (179, 'categories'),
-(181, 'event-location');
+(181, 'event-location'),
+(182, 'group-sections'),
+(183, 'group-section'),
+(184, 'ministry');
 
 -- --------------------------------------------------------
 
@@ -329,7 +332,56 @@ INSERT INTO `fieldgroups_fields` (`fieldgroups_id`, `fields_id`, `sort`, `data`)
 (162, 111, 6, NULL),
 (162, 117, 1, NULL),
 (162, 1, 0, NULL),
-(162, 207, 8, NULL);
+(162, 207, 8, NULL),
+(182, 232, 15, NULL),
+(183, 1, 0, NULL),
+(182, 154, 1, NULL),
+(182, 153, 2, NULL),
+(182, 150, 3, NULL),
+(182, 151, 4, NULL),
+(182, 152, 5, NULL),
+(182, 149, 6, NULL),
+(182, 117, 7, NULL),
+(182, 165, 8, NULL),
+(182, 111, 9, NULL),
+(182, 112, 10, NULL),
+(182, 207, 11, NULL),
+(182, 115, 12, NULL),
+(182, 193, 13, NULL),
+(182, 1, 0, NULL),
+(182, 194, 14, NULL),
+(182, 233, 16, NULL),
+(182, 236, 17, NULL),
+(182, 225, 18, NULL),
+(182, 235, 19, NULL),
+(182, 148, 20, NULL),
+(183, 232, 4, NULL),
+(184, 117, 3, NULL),
+(184, 165, 4, NULL),
+(184, 225, 5, NULL),
+(183, 117, 1, NULL),
+(183, 150, 2, NULL),
+(184, 154, 1, NULL),
+(183, 151, 3, NULL),
+(184, 224, 2, NULL),
+(184, 1, 0, NULL),
+(183, 233, 5, NULL),
+(183, 112, 6, NULL),
+(183, 194, 7, NULL),
+(183, 111, 8, NULL),
+(183, 193, 9, NULL),
+(183, 236, 10, NULL),
+(183, 207, 11, NULL),
+(183, 234, 12, NULL),
+(183, 115, 13, NULL),
+(183, 231, 14, NULL),
+(183, 225, 15, NULL),
+(137, 1, 0, NULL),
+(137, 167, 1, NULL),
+(137, 142, 2, NULL),
+(139, 167, 1, NULL),
+(139, 142, 2, NULL),
+(139, 1, 0, NULL);
 
 -- --------------------------------------------------------
 
@@ -347,7 +399,7 @@ CREATE TABLE IF NOT EXISTS `fields` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `name` (`name`),
   KEY `type` (`type`)
-) ENGINE=MyISAM  DEFAULT CHARSET=utf8 AUTO_INCREMENT=231 ;
+) ENGINE=MyISAM  DEFAULT CHARSET=utf8 AUTO_INCREMENT=238 ;
 
 --
 -- Dumping data for table `fields`
@@ -363,8 +415,8 @@ INSERT INTO `fields` (`id`, `type`, `name`, `flags`, `label`, `data`) VALUES
 (97, 'FieldtypeDatetime', 'publish_from', 0, 'Publish From Date', '{"dateOutputFormat":"Y-m-d H:i:s","dateInputFormat":"Y-m-d H:i:s","datepicker":1,"defaultToday":0}'),
 (98, 'FieldtypeDatetime', 'publish_until', 0, 'Publish Until Date', '{"dateOutputFormat":"Y-m-d H:i:s","dateInputFormat":"Y-m-d H:i:s","datepicker":1,"defaultToday":0}'),
 (115, 'FieldtypeRepeater', 'tabbed_content', 0, 'Tabbed Content', '{"template_id":91,"parent_id":7468,"repeaterReadyItems":3,"repeaterFields":[1,76,190,128]}'),
-(112, 'FieldtypeRepeater', 'resource_links', 0, 'Resource Links', '{"template_id":85,"parent_id":7349,"repeaterReadyItems":3,"repeaterFields":[1,168,181,183]}'),
-(111, 'FieldtypeRepeater', 'related_links', 0, 'Related Links', '{"template_id":83,"parent_id":6644,"repeaterReadyItems":3,"repeaterFields":[1,168,181]}'),
+(112, 'FieldtypeRepeater', 'resource_links', 0, 'Resource Links', '{"template_id":85,"parent_id":1032,"repeaterReadyItems":3,"repeaterFields":[1,167,142],"collapsed":0}'),
+(111, 'FieldtypeRepeater', 'related_links', 0, 'Related Links', '{"template_id":83,"parent_id":1031,"repeaterReadyItems":3,"repeaterFields":[1,167,142],"collapsed":0}'),
 (108, 'FieldtypeRepeater', 'home_block', 0, 'Home Block', '{"template_id":73,"parent_id":1028,"repeaterReadyItems":3,"repeaterFields":{"0":1,"2":226,"3":117,"4":167,"5":156},"collapsed":0}'),
 (109, 'FieldtypeRepeater', 'home_topimage_rotation', 0, 'Home Top Image Rotation', '{"template_id":75,"parent_id":1029,"repeaterReadyItems":3,"repeaterFields":[150,152],"collapsed":0}'),
 (117, 'FieldtypeTextarea', 'body', 0, 'Body', '{"inputfieldClass":"InputfieldCKEditor","rows":10,"theme_advanced_buttons1":"formatselect,|,bold,italic,|,bullist,numlist,|,link,unlink,|,image,|,code,|,fullscreen","theme_advanced_blockformats":"p,h2,h3,h4,blockquote,pre","plugins":"inlinepopups,safari,media,paste,fullscreen","valid_elements":"@[id|class],a[href|target|name],strong\\/b,em\\/i,br,img[src|id|class|width|height|alt],ul,ol,li,p[class],h2,h3,h4,blockquote,-p,-table[border=0|cellspacing|cellpadding|width|frame|rules|height|align|summary|bgcolor|background|bordercolor],-tr[rowspan|width|height|align|valign|bgcolor|background|bordercolor],tbody,thead,tfoot,#td[colspan|rowspan|width|height|align|valign|bgcolor|background|bordercolor|scope],#th[colspan|rowspan|width|height|align|valign|scope],code,pre","toolbar":"Format, Bold, Italic, -, RemoveFormat\\nNumberedList, BulletedList, -, Blockquote\\nPWLink, Unlink, Anchor\\nPWImage, Table, HorizontalRule, SpecialChar\\nPasteText, PasteFromWord\\nScayt, -, Sourcedialog,RemoveFormat","formatTags":"p;h1;h2;h3;h4;h5;h6;pre;address","extraPlugins":["pwimage","pwlink","sourcedialog"],"removePlugins":"image,magicline","textformatters":["TextformatterVideoEmbed"],"toggles":[8],"contentType":0,"collapsed":0,"inlineMode":0,"useACF":0,"usePurifier":0}'),
@@ -437,7 +489,14 @@ INSERT INTO `fields` (`id`, `type`, `name`, `flags`, `label`, `data`) VALUES
 (225, 'FieldtypePage', 'tags', 0, 'Tags', '{"parent_id":1061,"template_id":106,"labelFieldName":"title","inputfield":"InputfieldPageAutocomplete","addable":1,"derefAsPage":0,"collapsed":0,"operator":"%=","searchFields":"title"}'),
 (226, 'FieldtypeImage', 'thumbnail', 0, 'Thumbnail - at least 640x360 (for list view)', '{"extensions":"gif jpg jpeg png","maxFiles":1,"inputfieldClass":"InputfieldImage","descriptionRows":1,"fileSchema":2}'),
 (227, 'FieldtypeText', 'thumbnail_cdn', 0, 'Thumbnail CDN (Amazon S3) - at least 640x360', '{"maxlength":2048}'),
-(229, 'FieldtypeText', 'youtube_id', 0, 'Youtube ID', '{"maxlength":2048,"collapsed":0,"size":0}');
+(229, 'FieldtypeText', 'youtube_id', 0, 'Youtube ID', '{"maxlength":2048,"collapsed":0,"size":0}'),
+(231, 'FieldtypePage', 'ministry', 0, 'Ministry', '{"description":"Used for events and other ministry-related items","parent_id":2413,"template_id":60,"labelFieldName":"title","inputfield":"InputfieldPageAutocomplete","addable":1,"operator":"*=","searchFields":"title"}'),
+(232, 'FieldtypeURL', 'ministry_website', 0, 'Ministry Website', '{"maxlength":1024}'),
+(233, 'FieldtypeCheckbox', 'ministry_website_external', 0, 'Is Ministry Website Not An External Link?', '{"checkedValue":1}'),
+(234, 'FieldtypeCheckbox', 'no_sidebar', 0, 'No Sidebar', '{"checkedValue":1}'),
+(235, 'FieldtypeInteger', 'number_of_events_to_show', 0, 'Number of Events to Show', '{"description":"Default is 2","inputType":"text"}'),
+(236, 'FieldtypePage', 'related_events', 0, 'Related Events', '{"parent_id":1095,"template_id":111,"labelFieldName":"title","inputfield":"InputfieldPageListSelectMultiple","derefAsPage":0,"collapsed":0}'),
+(237, 'FieldtypeCheckbox', 'video_popup', 0, 'Video Popup', '');
 
 -- --------------------------------------------------------
 
@@ -508,7 +567,11 @@ INSERT INTO `field_body` (`pages_id`, `data`) VALUES
 (1306, '<p>Serve outside and assist with parking.</p>'),
 (1309, '<p>What did God do when He saved you? In order to understand the depths of God’s grace, we have to first realize that God is the initiator of salvation. We are the recipients of God’s grace, and that changes everything about how we live.</p>'),
 (1310, '<p>Redeemed people know how to live because they live for their Redeemer and their Redeemer lives in them.</p>'),
-(27, '<p>Page not found. Please use the menu or search the website.</p>');
+(27, '<p>Page not found. Please use the menu or search the website.</p>'),
+(1312, '<p>This is the body content of a new sermon.</p>'),
+(1313, '<p>This is a new sermon. ...</p>'),
+(1318, '<h2>Baptism</h2>\n\n<p>Baptism is a vital step for a person who is following Jesus. It''s not just a public declaration of a personal faith, but it''s also an outward symbol of an inward reality.</p>\n\n<p>When we see baptism in the Bible, we almost always see this pattern: "they believed...and they were baptized..." Baptism, then, was seen as the natural outcome for someone who professed faith in Jesus.</p>\n\n<p>Not only do we see this pattern in Scripture, but Jesus taught his disciples that Baptism was important to their mission: "Go and make disciples of all nations, baptizing them in the name of the Father and of the Son and of the Holy Spirit" (Matthew 28:19). For all of these reasons, we believe that baptism is important for the faith of every believer.<br />\n<br />\nWatch the videos in the resources section of this page for a little more information about baptism here at The Chapel.</p>\n\n<p>If you''re interested in understanding more about baptism, or if you''re ready to get baptized, please <a href="#">sign up</a>. We ask that everyone who desires to be baptized first attends our Discipleship Beginnings class, where we will discuss more of the details surrounding baptism in one of the sessions. (We have designed this class to be for those high school aged and up.)</p>'),
+(1336, '<p>We believe that every person who entrusts his or her life to Jesus Christ is a member of His worldwide body of believers, known as The Church. Having said that, the Bible clearly requires Christ-followers to actively engage and partner with a local gathering of believers, known as a church. Cross Point Church, as a local church, expects members to invest their spiritual gifts, resources, time, and money to reach every man, woman, and child through repeated opportunities to hear and see the Gospel of Jesus Christ.<br />\n<br />\nSome of the requirements for membership at The Chapel are:</p>\n\n<ol>\n   <li>Entrusting your life to Jesus Christ as a believer and follower.</li>\n <li>Attending the Membership Class. This is held on a Sunday morning during one of our worship services.</li>\n</ol>');
 
 -- --------------------------------------------------------
 
@@ -1110,7 +1173,8 @@ INSERT INTO `field_header_description` (`pages_id`, `data`) VALUES
 (1063, 'Drawing people to Jesus with our stories'),
 (1094, 'Stewarding our resources'),
 (1294, 'Seeing people grow in relationship with Jesus'),
-(1296, 'Using your gifts to further the kingdom');
+(1296, 'Using your gifts to further the kingdom'),
+(1318, 'Taking next steps of faith');
 
 -- --------------------------------------------------------
 
@@ -1145,7 +1209,9 @@ INSERT INTO `field_header_image` (`pages_id`, `data`, `sort`, `description`, `mo
 (1038, 'home-top1.jpg', 0, '', '2016-04-19 13:48:54', '2016-04-19 13:48:54'),
 (1039, 'home-top2.jpg', 0, '', '2016-04-19 13:48:54', '2016-04-19 13:48:54'),
 (1295, 'home-top2.jpg', 0, '', '2016-04-20 14:06:09', '2016-04-20 14:06:09'),
-(1296, 'home-top1.jpg', 0, '', '2016-04-20 14:22:52', '2016-04-20 14:22:52');
+(1296, 'home-top1.jpg', 0, '', '2016-04-20 14:22:52', '2016-04-20 14:22:52'),
+(1318, 'baptism-new1-1.jpg', 0, '', '2016-06-28 17:12:05', '2016-06-28 17:12:05'),
+(1336, 'baptism-membership1.jpg', 0, '', '2016-06-28 17:19:03', '2016-06-28 17:19:03');
 
 -- --------------------------------------------------------
 
@@ -1206,7 +1272,8 @@ INSERT INTO `field_header_title` (`pages_id`, `data`) VALUES
 (1094, 'Why We Give'),
 (1294, 'Our Mission'),
 (1295, 'Our Beliefs'),
-(1296, 'Serve');
+(1296, 'Serve'),
+(1318, 'Baptism & Membership');
 
 -- --------------------------------------------------------
 
@@ -1498,6 +1565,15 @@ CREATE TABLE IF NOT EXISTS `field_link` (
   FULLTEXT KEY `data` (`data`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
+--
+-- Dumping data for table `field_link`
+--
+
+INSERT INTO `field_link` (`pages_id`, `data`) VALUES
+(1323, '/events'),
+(1331, '/serve'),
+(1325, '/sermons/the-kings-last-week/the-return/');
+
 -- --------------------------------------------------------
 
 --
@@ -1542,7 +1618,8 @@ CREATE TABLE IF NOT EXISTS `field_media_date` (
 INSERT INTO `field_media_date` (`pages_id`, `data`) VALUES
 (1056, '2015-03-01 00:00:00'),
 (1092, '2015-03-08 00:00:00'),
-(1310, '2015-03-01 00:00:00');
+(1310, '2015-03-01 00:00:00'),
+(1313, '2016-06-28 00:00:00');
 
 -- --------------------------------------------------------
 
@@ -1565,7 +1642,8 @@ CREATE TABLE IF NOT EXISTS `field_media_speaker` (
 INSERT INTO `field_media_speaker` (`pages_id`, `data`, `sort`) VALUES
 (1056, 1059, 0),
 (1092, 1059, 0),
-(1310, 1311, 0);
+(1310, 1311, 0),
+(1313, 1314, 0);
 
 -- --------------------------------------------------------
 
@@ -1612,12 +1690,79 @@ INSERT INTO `field_media_thumbnail_graphic` (`pages_id`, `data`, `sort`, `descri
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `field_ministry`
+--
+
+CREATE TABLE IF NOT EXISTS `field_ministry` (
+  `pages_id` int(10) unsigned NOT NULL,
+  `data` int(11) NOT NULL,
+  `sort` int(10) unsigned NOT NULL,
+  PRIMARY KEY (`pages_id`,`sort`),
+  KEY `data` (`data`,`pages_id`,`sort`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `field_ministry_website`
+--
+
+CREATE TABLE IF NOT EXISTS `field_ministry_website` (
+  `pages_id` int(10) unsigned NOT NULL,
+  `data` text NOT NULL,
+  PRIMARY KEY (`pages_id`),
+  KEY `data_exact` (`data`(255)),
+  FULLTEXT KEY `data` (`data`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `field_ministry_website_external`
+--
+
+CREATE TABLE IF NOT EXISTS `field_ministry_website_external` (
+  `pages_id` int(10) unsigned NOT NULL,
+  `data` tinyint(4) NOT NULL,
+  PRIMARY KEY (`pages_id`),
+  KEY `data` (`data`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `field_not_featured_on_homepage`
 --
 
 CREATE TABLE IF NOT EXISTS `field_not_featured_on_homepage` (
   `pages_id` int(10) unsigned NOT NULL,
   `data` tinyint(4) NOT NULL,
+  PRIMARY KEY (`pages_id`),
+  KEY `data` (`data`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `field_no_sidebar`
+--
+
+CREATE TABLE IF NOT EXISTS `field_no_sidebar` (
+  `pages_id` int(10) unsigned NOT NULL,
+  `data` tinyint(4) NOT NULL,
+  PRIMARY KEY (`pages_id`),
+  KEY `data` (`data`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `field_number_of_events_to_show`
+--
+
+CREATE TABLE IF NOT EXISTS `field_number_of_events_to_show` (
+  `pages_id` int(10) unsigned NOT NULL,
+  `data` int(11) NOT NULL,
   PRIMARY KEY (`pages_id`),
   KEY `data` (`data`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
@@ -1830,6 +1975,27 @@ INSERT INTO `field_redirect_url` (`pages_id`, `data`) VALUES
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `field_related_events`
+--
+
+CREATE TABLE IF NOT EXISTS `field_related_events` (
+  `pages_id` int(10) unsigned NOT NULL,
+  `data` int(11) NOT NULL,
+  `sort` int(10) unsigned NOT NULL,
+  PRIMARY KEY (`pages_id`,`sort`),
+  KEY `data` (`data`,`pages_id`,`sort`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+
+--
+-- Dumping data for table `field_related_events`
+--
+
+INSERT INTO `field_related_events` (`pages_id`, `data`, `sort`) VALUES
+(1336, 1280, 0);
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `field_related_links`
 --
 
@@ -1851,7 +2017,9 @@ CREATE TABLE IF NOT EXISTS `field_related_links` (
 
 INSERT INTO `field_related_links` (`pages_id`, `data`, `count`, `parent_id`) VALUES
 (1063, '', 0, 1064),
-(1296, '', 0, 1297);
+(1296, '', 0, 1297),
+(1318, '1323,1331', 2, 1319),
+(1336, '', 0, 1338);
 
 -- --------------------------------------------------------
 
@@ -1867,6 +2035,13 @@ CREATE TABLE IF NOT EXISTS `field_related_links_title` (
   FULLTEXT KEY `data` (`data`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
+--
+-- Dumping data for table `field_related_links_title`
+--
+
+INSERT INTO `field_related_links_title` (`pages_id`, `data`) VALUES
+(1318, 'Custom Links');
+
 -- --------------------------------------------------------
 
 --
@@ -1880,6 +2055,13 @@ CREATE TABLE IF NOT EXISTS `field_resources_title` (
   KEY `data_exact` (`data`(255)),
   FULLTEXT KEY `data` (`data`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+
+--
+-- Dumping data for table `field_resources_title`
+--
+
+INSERT INTO `field_resources_title` (`pages_id`, `data`) VALUES
+(1318, 'Custom Resources');
 
 -- --------------------------------------------------------
 
@@ -1905,7 +2087,9 @@ CREATE TABLE IF NOT EXISTS `field_resource_links` (
 
 INSERT INTO `field_resource_links` (`pages_id`, `data`, `count`, `parent_id`) VALUES
 (1063, '', 0, 1068),
-(1296, '', 0, 1298);
+(1296, '', 0, 1298),
+(1318, '1325', 1, 1320),
+(1336, '', 0, 1337);
 
 -- --------------------------------------------------------
 
@@ -1969,7 +2153,8 @@ CREATE TABLE IF NOT EXISTS `field_series_date_end` (
 
 INSERT INTO `field_series_date_end` (`pages_id`, `data`) VALUES
 (1055, '2015-03-29 00:00:00'),
-(1309, '2015-03-08 00:00:00');
+(1309, '2015-03-08 00:00:00'),
+(1312, '2016-07-01 00:00:00');
 
 -- --------------------------------------------------------
 
@@ -1990,7 +2175,8 @@ CREATE TABLE IF NOT EXISTS `field_series_date_start` (
 
 INSERT INTO `field_series_date_start` (`pages_id`, `data`) VALUES
 (1055, '2015-03-01 00:00:00'),
-(1309, '2015-03-01 00:00:00');
+(1309, '2015-03-01 00:00:00'),
+(1312, '2016-06-28 00:00:00');
 
 -- --------------------------------------------------------
 
@@ -2166,7 +2352,8 @@ CREATE TABLE IF NOT EXISTS `field_sidebar_content` (
 --
 
 INSERT INTO `field_sidebar_content` (`pages_id`, `data`) VALUES
-(1063, '<h3>SHARE YOUR STORY</h3>\n\n<p>We would love to hear your story and encourage you to take some time to share it with us. Writing out your story will help you remember it to share with others in your life.</p>\n\n<p><a class="btn btn-default btn-left" href="#">Share Your Story</a></p>');
+(1063, '<h3>SHARE YOUR STORY</h3>\n\n<p>We would love to hear your story and encourage you to take some time to share it with us. Writing out your story will help you remember it to share with others in your life.</p>\n\n<p><a class="btn btn-default btn-left" href="#">Share Your Story</a></p>'),
+(1318, '<p>This is the sidebar content area.</p>');
 
 -- --------------------------------------------------------
 
@@ -2320,6 +2507,14 @@ CREATE TABLE IF NOT EXISTS `field_tabbed_content` (
   KEY `parent_id` (`parent_id`,`pages_id`),
   FULLTEXT KEY `data` (`data`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+
+--
+-- Dumping data for table `field_tabbed_content`
+--
+
+INSERT INTO `field_tabbed_content` (`pages_id`, `data`, `count`, `parent_id`) VALUES
+(1318, '', 0, 1321),
+(1336, '', 0, 1339);
 
 -- --------------------------------------------------------
 
@@ -2714,7 +2909,37 @@ INSERT INTO `field_title` (`pages_id`, `data`) VALUES
 (1308, 'Search Ajax'),
 (1309, 'Recipients'),
 (1310, 'Redeemed'),
-(1311, 'Pastor Jonathan Drake');
+(1311, 'Pastor Jonathan Drake'),
+(1312, 'A new sermon'),
+(1313, 'Sermon 1'),
+(1314, 'John Doe'),
+(1315, 'Ministry'),
+(1316, 'Children'),
+(1317, 'Women'),
+(1318, 'Baptism & Membership'),
+(1319, 'baptism-membership'),
+(1320, 'baptism-membership'),
+(1321, 'baptism-membership'),
+(1323, 'Example Link'),
+(1331, 'Link to Serve'),
+(1325, 'The Return'),
+(1336, 'Membership'),
+(1337, 'membership'),
+(1338, 'membership'),
+(1339, 'membership');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `field_video_popup`
+--
+
+CREATE TABLE IF NOT EXISTS `field_video_popup` (
+  `pages_id` int(10) unsigned NOT NULL,
+  `data` tinyint(4) NOT NULL,
+  PRIMARY KEY (`pages_id`),
+  KEY `data` (`data`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 -- --------------------------------------------------------
 
@@ -2892,18 +3117,18 @@ CREATE TABLE IF NOT EXISTS `pages` (
   KEY `created` (`created`),
   KEY `status` (`status`),
   KEY `published` (`published`)
-) ENGINE=MyISAM  DEFAULT CHARSET=utf8 AUTO_INCREMENT=1312 ;
+) ENGINE=MyISAM  DEFAULT CHARSET=utf8 AUTO_INCREMENT=1350 ;
 
 --
 -- Dumping data for table `pages`
 --
 
 INSERT INTO `pages` (`id`, `parent_id`, `templates_id`, `name`, `status`, `modified`, `modified_users_id`, `created`, `created_users_id`, `published`, `sort`) VALUES
-(1, 0, 1, 'home', 9, '2016-04-20 18:21:50', 41, '0000-00-00 00:00:00', 2, '0000-00-00 00:00:00', 0),
-(2, 1, 2, 'admin', 1035, '2016-02-17 15:58:27', 40, '0000-00-00 00:00:00', 2, '0000-00-00 00:00:00', 14),
+(1, 0, 1, 'home', 9, '2016-06-28 21:10:33', 41, '0000-00-00 00:00:00', 2, '0000-00-00 00:00:00', 0),
+(2, 1, 2, 'admin', 1035, '2016-02-17 15:58:27', 40, '0000-00-00 00:00:00', 2, '0000-00-00 00:00:00', 16),
 (3, 2, 2, 'page', 21, '2011-03-30 01:37:06', 41, '0000-00-00 00:00:00', 2, '0000-00-00 00:00:00', 0),
 (6, 3, 2, 'add', 21, '2016-02-17 15:58:39', 40, '0000-00-00 00:00:00', 2, '0000-00-00 00:00:00', 0),
-(7, 1, 2, 'trash', 1039, '2011-08-15 02:04:52', 41, '2010-02-07 10:29:39', 2, '2010-02-07 05:29:39', 15),
+(7, 1, 2, 'trash', 1039, '2011-08-15 02:04:52', 41, '2010-02-07 10:29:39', 2, '2010-02-07 05:29:39', 17),
 (8, 3, 2, 'list', 1045, '2016-02-17 15:58:39', 40, '0000-00-00 00:00:00', 2, '0000-00-00 00:00:00', 1),
 (9, 3, 2, 'sort', 1047, '2011-03-30 01:37:06', 41, '0000-00-00 00:00:00', 2, '0000-00-00 00:00:00', 2),
 (10, 3, 2, 'edit', 1045, '2016-02-17 15:58:39', 40, '0000-00-00 00:00:00', 2, '0000-00-00 00:00:00', 3),
@@ -2912,7 +3137,7 @@ INSERT INTO `pages` (`id`, `parent_id`, `templates_id`, `name`, `status`, `modif
 (21, 2, 2, 'module', 21, '2011-03-30 01:37:06', 41, '2010-02-02 15:02:24', 2, '2010-02-02 10:02:24', 2),
 (22, 2, 2, 'setup', 21, '2011-03-30 01:37:06', 41, '2010-02-09 17:16:59', 2, '2010-02-09 12:16:59', 1),
 (23, 2, 2, 'login', 1035, '2011-05-04 03:38:10', 41, '2010-02-17 14:59:39', 2, '2010-02-17 09:59:39', 4),
-(27, 1, 29, 'http404', 1035, '2016-04-20 19:03:48', 41, '2010-06-03 10:53:03', 3, '2010-06-03 06:53:03', 13),
+(27, 1, 29, 'http404', 1035, '2016-04-20 19:03:48', 41, '2010-06-03 10:53:03', 3, '2010-06-03 06:53:03', 15),
 (28, 2, 2, 'access', 13, '2011-05-04 03:38:10', 41, '2011-03-19 23:14:20', 2, '2011-03-19 19:14:20', 3),
 (29, 28, 2, 'users', 29, '2011-04-05 04:39:08', 41, '2011-03-19 23:15:29', 2, '2011-03-19 19:15:29', 0),
 (30, 28, 2, 'roles', 29, '2011-04-05 04:38:39', 41, '2011-03-19 23:15:45', 2, '2011-03-19 19:15:45', 1),
@@ -2977,16 +3202,16 @@ INSERT INTO `pages` (`id`, `parent_id`, `templates_id`, `name`, `status`, `modif
 (1047, 1041, 73, '1461008795-2-2', 3073, '2016-04-18 19:46:35', 41, '2016-04-18 19:46:35', 41, NULL, 3),
 (1048, 1041, 73, '1461008969-7-1', 3073, '2016-04-18 19:49:29', 41, '2016-04-18 19:49:29', 41, NULL, 4),
 (1049, 1041, 73, '1461008969-72-2', 3073, '2016-04-18 19:49:29', 41, '2016-04-18 19:49:29', 41, NULL, 5),
-(1054, 1, 99, 'sermons', 1, '2016-04-19 17:32:07', 41, '2016-04-18 20:20:36', 41, '2016-04-18 16:20:36', 5),
+(1054, 1, 99, 'sermons', 1, '2016-04-19 17:32:07', 41, '2016-04-18 20:20:36', 41, '2016-04-18 16:20:36', 6),
 (1055, 1054, 99, 'the-kings-last-week', 1, '2016-04-18 20:28:44', 41, '2016-04-18 20:26:27', 41, '2016-04-18 16:28:02', 0),
 (1056, 1055, 121, 'the-return', 1, '2016-04-18 20:55:39', 41, '2016-04-18 20:42:50', 41, '2016-04-18 16:44:17', 0),
-(1057, 1, 102, 'media', 1, '2016-04-18 20:48:31', 41, '2016-04-18 20:48:31', 41, '2016-04-18 16:48:31', 6),
+(1057, 1, 102, 'media', 1, '2016-04-18 20:48:31', 41, '2016-04-18 20:48:31', 41, '2016-04-18 16:48:31', 7),
 (1058, 1057, 102, 'speakers', 1, '2016-04-18 20:48:42', 41, '2016-04-18 20:48:40', 41, '2016-04-18 16:48:40', 0),
 (1059, 1058, 123, 'pastor-jerry-gillis', 1, '2016-04-18 20:49:13', 41, '2016-04-18 20:49:04', 41, '2016-04-18 16:49:04', 0),
-(1060, 1, 102, 'tools', 1025, '2016-04-18 20:50:58', 41, '2016-04-18 20:50:39', 41, '2016-04-18 16:50:39', 11),
-(1061, 1, 102, 'tags', 1025, '2016-04-18 20:51:52', 41, '2016-04-18 20:51:04', 41, '2016-04-18 16:51:07', 12),
+(1060, 1, 102, 'tools', 1025, '2016-04-18 20:50:58', 41, '2016-04-18 20:50:39', 41, '2016-04-18 16:50:39', 12),
+(1061, 1, 102, 'tags', 1025, '2016-04-18 20:51:52', 41, '2016-04-18 20:51:04', 41, '2016-04-18 16:51:07', 13),
 (1062, 1061, 106, 'jesus', 1, '2016-04-18 20:51:43', 41, '2016-04-18 20:51:18', 41, '2016-04-18 16:51:43', 0),
-(1063, 1, 115, 'stories', 1, '2016-04-20 17:50:50', 41, '2016-04-19 13:02:43', 41, '2016-04-19 09:02:43', 9),
+(1063, 1, 115, 'stories', 1, '2016-04-20 17:50:50', 41, '2016-04-19 13:02:43', 41, '2016-04-19 09:02:43', 10),
 (1064, 1031, 2, 'for-page-1063', 17, '2016-04-19 13:04:38', 41, '2016-04-19 13:04:38', 41, '2016-04-19 09:04:38', 0),
 (1065, 1064, 83, '1461071078-7-1', 3073, '2016-04-19 13:04:38', 41, '2016-04-19 13:04:38', 41, NULL, 0),
 (1066, 1064, 83, '1461071078-71-2', 3073, '2016-04-19 13:04:38', 41, '2016-04-19 13:04:38', 41, NULL, 1),
@@ -3004,7 +3229,7 @@ INSERT INTO `pages` (`id`, `parent_id`, `templates_id`, `name`, `status`, `modif
 (1078, 1074, 85, '1461071508-18-4', 3073, '2016-04-19 13:11:48', 41, '2016-04-19 13:11:48', 41, NULL, 0),
 (1079, 1074, 85, '1461071508-19-5', 3073, '2016-04-19 13:11:48', 41, '2016-04-19 13:11:48', 41, NULL, 1),
 (1080, 1074, 85, '1461071508-19-6', 3073, '2016-04-19 13:11:48', 41, '2016-04-19 13:11:48', 41, NULL, 2),
-(1081, 1, 110, 'blog', 1, '2016-04-20 17:50:55', 41, '2016-04-19 16:42:24', 41, '2016-04-19 12:42:26', 10),
+(1081, 1, 110, 'blog', 1, '2016-04-20 17:50:55', 41, '2016-04-19 16:42:24', 41, '2016-04-19 12:42:26', 11),
 (1082, 1081, 110, 'category', 1, '2016-04-19 17:22:19', 41, '2016-04-19 16:46:54', 41, '2016-04-19 12:46:56', 4),
 (1083, 1082, 125, 'prayer', 1, '2016-04-19 16:47:37', 41, '2016-04-19 16:47:37', 41, '2016-04-19 12:47:37', 0),
 (1084, 1082, 125, 'culture', 1, '2016-04-19 16:47:47', 41, '2016-04-19 16:47:47', 41, '2016-04-19 12:47:47', 1),
@@ -3016,9 +3241,9 @@ INSERT INTO `pages` (`id`, `parent_id`, `templates_id`, `name`, `status`, `modif
 (1090, 1081, 103, 'author', 1, '2016-04-19 17:09:59', 41, '2016-04-19 17:09:57', 41, '2016-04-19 13:09:59', 3),
 (1091, 1081, 119, 'search', 1, '2016-04-19 17:13:39', 41, '2016-04-19 17:13:39', 41, '2016-04-19 13:13:39', 5),
 (1092, 1055, 121, 'the-meal', 1, '2016-04-19 17:37:59', 41, '2016-04-19 17:37:05', 41, '2016-04-19 13:37:59', 1),
-(1093, 1, 102, 'give', 1, '2016-04-20 17:50:40', 41, '2016-04-19 18:51:46', 41, '2016-04-19 14:51:48', 7),
+(1093, 1, 102, 'give', 1, '2016-04-20 17:50:40', 41, '2016-04-19 18:51:46', 41, '2016-04-19 14:51:48', 8),
 (1094, 1093, 29, 'why-we-give', 1, '2016-04-19 19:18:59', 41, '2016-04-19 18:52:39', 41, '2016-04-19 14:52:39', 0),
-(1095, 1, 120, 'events', 1, '2016-04-20 17:50:44', 41, '2016-04-19 20:09:57', 41, '2016-04-19 16:09:59', 8),
+(1095, 1, 120, 'events', 1, '2016-04-20 17:50:44', 41, '2016-04-19 20:09:57', 41, '2016-04-19 16:09:59', 9),
 (1096, 1095, 111, 'sample-recurring-event', 1, '2016-04-20 16:00:24', 41, '2016-04-19 20:12:37', 41, '2016-04-19 16:17:11', 0),
 (1097, 22, 2, 'date-archiver', 1, '2016-04-20 15:27:55', 41, '2016-04-20 15:27:55', 41, '2016-04-20 11:27:55', 5),
 (1098, 22, 2, 'events-duplicator', 1, '2016-04-20 15:40:50', 41, '2016-04-20 15:40:50', 41, '2016-04-20 11:40:50', 6),
@@ -3230,11 +3455,46 @@ INSERT INTO `pages` (`id`, `parent_id`, `templates_id`, `name`, `status`, `modif
 (1304, 1298, 85, '1461176512-68-6', 3073, '2016-04-20 18:21:52', 41, '2016-04-20 18:21:52', 41, NULL, 2),
 (1305, 1296, 95, 'childrens-ministry', 1, '2016-04-20 18:25:23', 41, '2016-04-20 18:23:49', 41, '2016-04-20 14:25:23', 0),
 (1306, 1296, 95, 'parking-lot-attendants', 1, '2016-04-20 18:26:36', 41, '2016-04-20 18:25:37', 41, '2016-04-20 14:26:36', 1),
-(1307, 1, 97, 'search', 1025, '2016-04-20 18:41:06', 41, '2016-04-20 18:40:57', 41, '2016-04-20 14:40:59', 13),
+(1307, 1, 97, 'search', 1025, '2016-04-20 18:41:06', 41, '2016-04-20 18:40:57', 41, '2016-04-20 14:40:59', 14),
 (1308, 1060, 109, 'search-ajax', 1025, '2016-04-20 18:44:42', 41, '2016-04-20 18:44:35', 41, '2016-04-20 14:44:37', 1),
 (1309, 1054, 99, 'recipients', 1, '2016-04-20 18:53:47', 41, '2016-04-20 18:50:59', 41, '2016-04-20 14:52:08', 1),
 (1310, 1309, 121, 'redeemed', 1, '2016-04-20 18:53:55', 41, '2016-04-20 18:52:30', 41, '2016-04-20 14:53:06', 0),
-(1311, 1058, 123, 'pastor-jonathan-drake', 1, '2016-04-20 18:53:06', 41, '2016-04-20 18:53:06', 41, '2016-04-20 14:53:06', 1);
+(1311, 1058, 123, 'pastor-jonathan-drake', 1, '2016-04-20 18:53:06', 41, '2016-04-20 18:53:06', 41, '2016-04-20 14:53:06', 1),
+(1312, 1054, 99, 'a-new-sermon', 1, '2016-06-27 23:01:32', 41, '2016-06-27 22:59:36', 41, '2016-06-27 18:59:59', 2),
+(1313, 1312, 121, 'sermon-1', 1, '2016-06-27 23:04:38', 41, '2016-06-27 23:02:09', 41, '2016-06-27 19:02:19', 0),
+(1314, 1058, 123, 'john-doe', 1, '2016-06-27 23:04:38', 41, '2016-06-27 23:04:38', 41, '2016-06-27 19:04:38', 2),
+(1315, 1060, 130, 'ministry', 1, '2016-06-28 21:06:55', 41, '2016-06-28 21:06:51', 41, '2016-06-28 17:06:55', 2),
+(1316, 1315, 130, 'children', 2049, '2016-06-28 21:07:03', 41, '2016-06-28 21:07:03', 41, NULL, 0),
+(1317, 1315, 130, 'women', 1, '2016-06-28 21:07:18', 41, '2016-06-28 21:07:15', 41, '2016-06-28 17:07:18', 1),
+(1318, 1, 128, 'baptism-membership', 1, '2016-06-28 21:39:27', 41, '2016-06-28 21:08:03', 41, '2016-06-28 17:08:07', 5),
+(1319, 1031, 2, 'for-page-1318', 17, '2016-06-28 21:08:03', 41, '2016-06-28 21:08:03', 41, '2016-06-28 17:08:03', 3),
+(1320, 1032, 2, 'for-page-1318', 17, '2016-06-28 21:08:03', 41, '2016-06-28 21:08:03', 41, '2016-06-28 17:08:03', 3),
+(1321, 1035, 2, 'for-page-1318', 17, '2016-06-28 21:08:03', 41, '2016-06-28 21:08:03', 41, '2016-06-28 17:08:03', 0),
+(1331, 1319, 83, '1467148326-01-1', 1, '2016-06-28 21:16:48', 41, '2016-06-28 21:12:06', 41, '2016-06-28 17:16:48', 1),
+(1323, 1319, 83, '1467148084-76-2', 1, '2016-06-28 21:16:48', 41, '2016-06-28 21:08:04', 41, '2016-06-28 17:16:48', 0),
+(1324, 1319, 83, '1467148084-77-3', 3073, '2016-06-28 21:08:04', 41, '2016-06-28 21:08:04', 41, NULL, 2),
+(1325, 1320, 85, '1467148084-79-4', 1, '2016-06-28 21:16:48', 41, '2016-06-28 21:08:04', 41, '2016-06-28 17:16:48', 0),
+(1327, 1320, 85, '1467148084-81-6', 3073, '2016-06-28 21:08:04', 41, '2016-06-28 21:08:04', 41, NULL, 2),
+(1328, 1321, 91, '1467148084-83-7', 3073, '2016-06-28 21:08:04', 41, '2016-06-28 21:08:04', 41, NULL, 0),
+(1329, 1321, 91, '1467148084-84-8', 3073, '2016-06-28 21:08:04', 41, '2016-06-28 21:08:04', 41, NULL, 1),
+(1330, 1321, 91, '1467148084-85-9', 3073, '2016-06-28 21:08:04', 41, '2016-06-28 21:08:04', 41, NULL, 2),
+(1332, 1319, 83, '1467148608-96-1', 3073, '2016-06-28 21:16:48', 41, '2016-06-28 21:16:48', 41, NULL, 3),
+(1333, 1319, 83, '1467148608-98-2', 3073, '2016-06-28 21:16:48', 41, '2016-06-28 21:16:48', 41, NULL, 4),
+(1334, 1320, 85, '1467148609-3', 3073, '2016-06-28 21:16:49', 41, '2016-06-28 21:16:49', 41, NULL, 3),
+(1335, 1320, 85, '1467148609-01-4', 3073, '2016-06-28 21:16:49', 41, '2016-06-28 21:16:49', 41, NULL, 4),
+(1336, 1318, 129, 'membership', 1, '2016-06-28 21:38:03', 41, '2016-06-28 21:17:10', 41, '2016-06-28 17:19:03', 0),
+(1337, 1032, 2, 'for-page-1336', 17, '2016-06-28 21:17:10', 41, '2016-06-28 21:17:10', 41, '2016-06-28 17:17:10', 4),
+(1338, 1031, 2, 'for-page-1336', 17, '2016-06-28 21:17:10', 41, '2016-06-28 21:17:10', 41, '2016-06-28 17:17:10', 4),
+(1339, 1035, 2, 'for-page-1336', 17, '2016-06-28 21:17:11', 41, '2016-06-28 21:17:11', 41, '2016-06-28 17:17:11', 1),
+(1341, 1337, 85, '1467148631-7-2', 3073, '2016-06-28 21:17:11', 41, '2016-06-28 21:17:11', 41, NULL, 1),
+(1342, 1337, 85, '1467148631-71-3', 3073, '2016-06-28 21:17:11', 41, '2016-06-28 21:17:11', 41, NULL, 2),
+(1343, 1338, 83, '1467148631-72-4', 3073, '2016-06-28 21:17:11', 41, '2016-06-28 21:17:11', 41, NULL, 0),
+(1344, 1338, 83, '1467148631-73-5', 3073, '2016-06-28 21:17:11', 41, '2016-06-28 21:17:11', 41, NULL, 1),
+(1345, 1338, 83, '1467148631-74-6', 3073, '2016-06-28 21:17:11', 41, '2016-06-28 21:17:11', 41, NULL, 2),
+(1346, 1339, 91, '1467148631-76-7', 3073, '2016-06-28 21:17:11', 41, '2016-06-28 21:17:11', 41, NULL, 0),
+(1347, 1339, 91, '1467148631-77-8', 3073, '2016-06-28 21:17:11', 41, '2016-06-28 21:17:11', 41, NULL, 1),
+(1348, 1339, 91, '1467148631-78-9', 3073, '2016-06-28 21:17:11', 41, '2016-06-28 21:17:11', 41, NULL, 2),
+(1349, 1337, 85, '1467148743-89-1', 3073, '2016-06-28 21:19:03', 41, '2016-06-28 21:19:03', 41, NULL, 3);
 
 -- --------------------------------------------------------
 
@@ -3531,7 +3791,36 @@ INSERT INTO `pages_access` (`pages_id`, `templates_id`, `ts`) VALUES
 (1308, 1, '2016-04-20 18:44:35'),
 (1309, 1, '2016-04-20 18:50:59'),
 (1310, 1, '2016-04-20 18:52:30'),
-(1311, 1, '2016-04-20 18:53:06');
+(1311, 1, '2016-04-20 18:53:06'),
+(1312, 1, '2016-06-27 22:59:36'),
+(1313, 1, '2016-06-27 23:02:09'),
+(1314, 1, '2016-06-27 23:04:38'),
+(1315, 1, '2016-06-28 21:06:51'),
+(1316, 1, '2016-06-28 21:07:03'),
+(1317, 1, '2016-06-28 21:07:15'),
+(1318, 1, '2016-06-28 21:08:04'),
+(1331, 2, '2016-06-28 21:12:06'),
+(1323, 2, '2016-06-28 21:08:04'),
+(1324, 2, '2016-06-28 21:08:04'),
+(1325, 2, '2016-06-28 21:08:04'),
+(1327, 2, '2016-06-28 21:08:04'),
+(1328, 2, '2016-06-28 21:08:04'),
+(1329, 2, '2016-06-28 21:08:04'),
+(1330, 2, '2016-06-28 21:08:04'),
+(1332, 2, '2016-06-28 21:16:48'),
+(1333, 2, '2016-06-28 21:16:48'),
+(1334, 2, '2016-06-28 21:16:49'),
+(1335, 2, '2016-06-28 21:16:49'),
+(1336, 1, '2016-06-28 21:17:11'),
+(1341, 2, '2016-06-28 21:17:11'),
+(1342, 2, '2016-06-28 21:17:11'),
+(1343, 2, '2016-06-28 21:17:11'),
+(1344, 2, '2016-06-28 21:17:11'),
+(1345, 2, '2016-06-28 21:17:11'),
+(1346, 2, '2016-06-28 21:17:11'),
+(1347, 2, '2016-06-28 21:17:11'),
+(1348, 2, '2016-06-28 21:17:11'),
+(1349, 2, '2016-06-28 21:19:03');
 
 -- --------------------------------------------------------
 
@@ -3581,6 +3870,9 @@ INSERT INTO `pages_parents` (`pages_id`, `parents_id`) VALUES
 (1032, 1),
 (1032, 2),
 (1032, 1018),
+(1035, 1),
+(1035, 2),
+(1035, 1018),
 (1037, 1),
 (1037, 2),
 (1037, 1018),
@@ -3636,7 +3928,36 @@ INSERT INTO `pages_parents` (`pages_id`, `parents_id`) VALUES
 (1298, 1018),
 (1298, 1032),
 (1309, 1),
-(1309, 1054);
+(1309, 1054),
+(1312, 1),
+(1312, 1054),
+(1315, 1),
+(1315, 1060),
+(1318, 1),
+(1319, 1),
+(1319, 2),
+(1319, 1018),
+(1319, 1031),
+(1320, 1),
+(1320, 2),
+(1320, 1018),
+(1320, 1032),
+(1321, 1),
+(1321, 2),
+(1321, 1018),
+(1321, 1035),
+(1337, 1),
+(1337, 2),
+(1337, 1018),
+(1337, 1032),
+(1338, 1),
+(1338, 2),
+(1338, 1018),
+(1338, 1031),
+(1339, 1),
+(1339, 2),
+(1339, 1018),
+(1339, 1035);
 
 -- --------------------------------------------------------
 
@@ -3699,7 +4020,7 @@ CREATE TABLE IF NOT EXISTS `session_login_throttle` (
 --
 
 INSERT INTO `session_login_throttle` (`name`, `attempts`, `last_attempt`) VALUES
-('admin', 1, 1461006563);
+('admin', 1, 1467147034);
 
 -- --------------------------------------------------------
 
@@ -3717,19 +4038,19 @@ CREATE TABLE IF NOT EXISTS `templates` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `name` (`name`),
   KEY `fieldgroups_id` (`fieldgroups_id`)
-) ENGINE=MyISAM  DEFAULT CHARSET=utf8 AUTO_INCREMENT=128 ;
+) ENGINE=MyISAM  DEFAULT CHARSET=utf8 AUTO_INCREMENT=131 ;
 
 --
 -- Dumping data for table `templates`
 --
 
 INSERT INTO `templates` (`id`, `name`, `fieldgroups_id`, `flags`, `cache_time`, `data`) VALUES
-(2, 'admin', 2, 8, 0, '{"useRoles":1,"parentTemplates":[2],"allowPageNum":1,"redirectLogin":23,"slashUrls":1,"noGlobal":1,"modified":1455724178}'),
+(2, 'admin', 2, 8, 0, '{"useRoles":1,"parentTemplates":[2],"allowPageNum":1,"redirectLogin":23,"slashUrls":1,"noGlobal":1,"modified":1467049386}'),
 (3, 'user', 3, 8, 0, '{"useRoles":1,"noChildren":1,"parentTemplates":[2],"slashUrls":1,"pageClass":"User","noGlobal":1,"noMove":1,"noTrash":1,"noSettings":1,"noChangeTemplate":1,"nameContentTab":1,"modified":1461085200}'),
 (4, 'role', 4, 8, 0, '{"noChildren":1,"parentTemplates":[2],"slashUrls":1,"pageClass":"Role","noGlobal":1,"noMove":1,"noTrash":1,"noSettings":1,"noChangeTemplate":1,"nameContentTab":1}'),
 (5, 'permission', 5, 8, 0, '{"noChildren":1,"parentTemplates":[2],"slashUrls":1,"guestSearchable":1,"pageClass":"Permission","noGlobal":1,"noMove":1,"noTrash":1,"noSettings":1,"noChangeTemplate":1,"nameContentTab":1}'),
-(1, 'home', 1, 0, 0, '{"useRoles":1,"noParents":1,"slashUrls":1,"modified":1461086495,"roles":[37]}'),
-(29, 'basic-page', 83, 0, 0, '{"slashUrls":1,"modified":1461092069}'),
+(1, 'home', 1, 0, 0, '{"useRoles":1,"noParents":1,"slashUrls":1,"modified":1467049388,"roles":[37]}'),
+(29, 'basic-page', 83, 0, 0, '{"slashUrls":1,"modified":1467049387}'),
 (59, 'repeater_tabbed_content', 113, 8, 0, '{"noChildren":1,"noParents":1,"slashUrls":1,"noGlobal":1,"modified":1455725971}'),
 (58, 'repeater_song_list', 112, 8, 0, '{"noChildren":1,"noParents":1,"slashUrls":1,"noGlobal":1,"modified":1455725971}'),
 (57, 'repeater_service_opportunity_repeater', 111, 8, 0, '{"noChildren":1,"noParents":1,"slashUrls":1,"noGlobal":1,"modified":1455725971}'),
@@ -3768,33 +4089,36 @@ INSERT INTO `templates` (`id`, `name`, `fieldgroups_id`, `flags`, `cache_time`, 
 (90, 'repeater_tabbed_content3', 144, 8, 0, '{"noChildren":1,"noParents":1,"slashUrls":1,"noGlobal":1,"modified":1455729191}'),
 (91, 'repeater_tabbed_content4', 145, 8, 0, '{"noChildren":1,"noParents":1,"slashUrls":1,"noGlobal":1,"modified":1455729191}'),
 (92, 'repeater_timeline3', 146, 8, 0, '{"noChildren":1,"noParents":1,"slashUrls":1,"noGlobal":1,"modified":1455729191}'),
-(94, 'event-ical', 148, 0, 0, '{"slashUrls":1,"modified":1461010136}'),
-(95, 'serve-application', 149, 0, 0, '{"slashUrls":1,"modified":1461177180}'),
-(96, 'media-search', 150, 0, 0, '{"slashUrls":1,"modified":1461087291}'),
-(97, 'search', 151, 0, 0, '{"allowPageNum":1,"slashUrls":1,"modified":1461178198}'),
-(99, 'series', 153, 0, 0, '{"slashUrls":1,"modified":1461087226}'),
-(100, 'story-detail', 154, 0, 0, '{"slashUrls":1,"modified":1461071695}'),
-(101, 'staff-list', 155, 0, 0, '{"slashUrls":1,"modified":1461175327}'),
-(102, 'empty-redirect', 156, 0, 0, '{"slashUrls":1,"modified":1461091925}'),
-(103, 'blog-author', 157, 0, 0, '{"allowPageNum":1,"urlSegments":1,"slashUrls":1,"modified":1461085960}'),
-(104, 'staff-detail', 158, 0, 0, '{"slashUrls":1,"modified":1461175374}'),
-(106, 'tags', 160, 0, 0, '{"slashUrls":1,"modified":1461010136}'),
-(107, 'event-calendar', 161, 0, 86400, '{"slashUrls":1,"modified":1461168301}'),
-(108, 'serve', 162, 0, 0, '{"slashUrls":1,"modified":1461176820}'),
-(109, 'search-ajax', 163, 0, 0, '{"allowPageNum":1,"slashUrls":1,"modified":1461178209}'),
-(110, 'posts', 164, 0, 0, '{"allowPageNum":1,"urlSegments":1,"slashUrls":1,"modified":1461085871}'),
-(111, 'event', 165, 0, 0, '{"slashUrls":1,"modified":1461168798}'),
-(114, 'post', 168, 0, 0, '{"allowChangeUser":1,"slashUrls":1,"modified":1461085456}'),
-(115, 'story-archive', 169, 0, 0, '{"slashUrls":1,"modified":1461071103}'),
+(94, 'event-ical', 148, 0, 0, '{"slashUrls":1,"modified":1467049387}'),
+(95, 'serve-application', 149, 0, 0, '{"slashUrls":1,"modified":1467049389}'),
+(96, 'media-search', 150, 0, 0, '{"slashUrls":1,"modified":1467049388}'),
+(97, 'search', 151, 0, 0, '{"allowPageNum":1,"slashUrls":1,"modified":1467049388}'),
+(99, 'series', 153, 0, 0, '{"slashUrls":1,"modified":1467049389}'),
+(100, 'story-detail', 154, 0, 0, '{"slashUrls":1,"modified":1467049389}'),
+(101, 'staff-list', 155, 0, 0, '{"slashUrls":1,"modified":1467049389}'),
+(102, 'empty-redirect', 156, 0, 0, '{"slashUrls":1,"modified":1467049387}'),
+(103, 'blog-author', 157, 0, 0, '{"allowPageNum":1,"urlSegments":1,"slashUrls":1,"modified":1467049387}'),
+(104, 'staff-detail', 158, 0, 0, '{"slashUrls":1,"modified":1467049389}'),
+(106, 'tags', 160, 0, 0, '{"slashUrls":1,"modified":1467049389}'),
+(107, 'event-calendar', 161, 0, 86400, '{"slashUrls":1,"modified":1467049387}'),
+(108, 'serve', 162, 0, 0, '{"slashUrls":1,"modified":1467049389}'),
+(109, 'search-ajax', 163, 0, 0, '{"allowPageNum":1,"slashUrls":1,"modified":1467049388}'),
+(110, 'posts', 164, 0, 0, '{"allowPageNum":1,"urlSegments":1,"slashUrls":1,"modified":1467049388}'),
+(111, 'event', 165, 0, 0, '{"slashUrls":1,"modified":1467049388}'),
+(114, 'post', 168, 0, 0, '{"allowChangeUser":1,"slashUrls":1,"modified":1467049388}'),
+(115, 'story-archive', 169, 0, 0, '{"slashUrls":1,"modified":1467049389}'),
 (117, 'campus', 171, 0, 0, '{"slashUrls":1,"modified":1461010136}'),
-(119, 'blog-search', 173, 0, 0, '{"slashUrls":1,"modified":1461085978}'),
-(120, 'event-list', 174, 0, 0, '{"slashUrls":1,"modified":1461168689}'),
-(121, 'media', 175, 0, 0, '{"slashUrls":1,"modified":1461087393}'),
-(122, 'media-archive', 176, 0, 0, '{"slashUrls":1,"modified":1461012471}'),
-(123, 'media-speaker', 177, 0, 0, '{"slashUrls":1,"modified":1461012471}'),
+(119, 'blog-search', 173, 0, 0, '{"slashUrls":1,"modified":1467049387}'),
+(120, 'event-list', 174, 0, 0, '{"slashUrls":1,"modified":1467049387}'),
+(121, 'media', 175, 0, 0, '{"slashUrls":1,"modified":1467049388}'),
+(122, 'media-archive', 176, 0, 0, '{"slashUrls":1,"modified":1467049388}'),
+(123, 'media-speaker', 177, 0, 0, '{"slashUrls":1,"modified":1467049388}'),
 (126, 'event-repeater', 180, 0, 0, '{"slashUrls":1,"pageLabelField":"event_date","modified":1461167062}'),
-(125, 'categories', 179, 0, 0, '{"slashUrls":1,"modified":1461085946}'),
-(127, 'event-location', 181, 0, 0, '{"slashUrls":1,"modified":1461167832}');
+(125, 'categories', 179, 0, 0, '{"slashUrls":1,"modified":1467049387}'),
+(127, 'event-location', 181, 0, 0, '{"slashUrls":1,"modified":1461167832}'),
+(128, 'group-sections', 182, 0, 0, '{"slashUrls":1,"modified":1467147780}'),
+(129, 'group-section', 183, 0, 0, '{"slashUrls":1,"modified":1467148199}'),
+(130, 'ministry', 184, 0, 0, '{"slashUrls":1,"modified":1467147977}');
 
 -- --------------------------------------------------------
 
