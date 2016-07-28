@@ -18,9 +18,9 @@ class LibJulian extends WireData implements Module {
   }
 
   private function julianLoader(){
-    include "julian/Julian.php";
-    include "julian/Julian_Day.php";
-    include "julian/Julian_Week.php";
-    include "julian/Julian_Event.php";
+    include_once "julian/Julian.php";
+    include_once "julian/Julian_Day.php";
+    include_once "julian/Julian_Week.php";
+    include_once "julian/Julian_Event.php";
   }
 }
