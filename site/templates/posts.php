@@ -5,7 +5,7 @@
  *
  */
 
-include_once("./includes/blog.inc");
+include_once("./includes/blog.php");
 
 
 if($input->urlSegment1) {
@@ -27,7 +27,7 @@ if($input->urlSegment1) {
     // display paginated blog list
     $headline = $page->get('headline|title');
 
-    include("./includes/head.inc");
+    include("./includes/head-4.php");
 
 
 
@@ -36,18 +36,6 @@ if($input->urlSegment1) {
 
 
 <div class='section ' style='background-color:#efefef;'>
-
-            <div class="container serif">
-                <div class="row">
-                    <div class="col-md-12 mg-t-lg mg-b-md">
-
-                              <h1><?php echo $page->title;?></h1>
-
-
-
-                    </div>
-                </div>
-            </div>
 
 
 
@@ -97,7 +85,7 @@ if($input->urlSegment1) {
 </div> <!-- end section -->
 
 
-<div class='container'>
+<div class='container' style="display: none;">
  <div class='row mg-t-lg mg-b-lg'>
 
      <?php
@@ -143,6 +131,6 @@ if($input->urlSegment1) {
 <?php
 
 
-    include("./includes/foot.inc");
+    include("./includes/foot-4.php");
 }
 

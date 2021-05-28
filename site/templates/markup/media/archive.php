@@ -26,7 +26,7 @@ echo "<div class='col-md-4 col-md-offset-2'><div id='search-content-form' class=
 echo "<div class='col-md-12'><hr class='thin-hr mg-t-sm2 mg-b-sm'></div>";
 echo "</div>";
 
-//echo '<div class="row ">';
+echo '<div class="row ">';
 
 $series_root = $pages->get("/sermons/");
 $generic_img = $series_root->images->first()->size(640, 360)->url;
@@ -35,14 +35,14 @@ $iterator = 1;
 
 
 $out = '';
-if( count($messages)> 0){
+if( !empty($messages)> 0){
     foreach($messages->filter("start=$start, limit=$limit, sort=-media_date") as $m) {
                  $datestr = date("Y-m-d", strtotime($m->media_date));
 
                  $speakers = '';
-                 if( count($m->media_speaker) )
+                 if( !empty($m->media_speaker) )
                  {
-                    $speakerTotal = count($m->media_speaker);
+                    $speakerTotal = !empty($m->media_speaker);
                     $s = 0;
                     foreach($m->media_speaker as $speaker) {
                         $speakers .= "<a href='".$speaker->url."'>".$speaker->title."</a>";
@@ -57,11 +57,11 @@ if( count($messages)> 0){
 
                 if($m->template == 'series')
                 {
-                    if(count( $m->thumbnail) > 0)
+                    if(!empty( $m->thumbnail) > 0)
                     {
                          $thumb =  $m->thumbnail->size(640, 360)->url;
                     }
-                     else if(count( $m->series_wide_graphic) > 0)
+                     else if(!empty( $m->series_wide_graphic) > 0)
                     {
                          $thumb =  $m->series_wide_graphic->size(640, 360)->url;
                     }
@@ -73,11 +73,11 @@ if( count($messages)> 0){
                     {
                         $thumb = $m->media_thumbnail;
                     }
-                    else if(count( $m->parent->thumbnail) > 0)
+                    else if(!empty( $m->parent->thumbnail) > 0)
                     {
                          $thumb =  $m->parent->thumbnail->size(640, 360)->url;
                     }
-                     else if(count( $m->parent->series_wide_graphic) > 0)
+                     else if(!empty( $m->parent->series_wide_graphic) > 0)
                     {
                          $thumb =  $m->parent->series_wide_graphic->size(640, 360)->url;
                     }
@@ -134,10 +134,10 @@ if( count($messages)> 0){
                 $out .= "</div>"; // end col-sm-8
                 $out .= "</div>"; // end row
 
-                //if($tt != $iterator)
+                if($tt != $iterator)
                 $out .= "<div class='row'><div class='col-md-12'><hr></div></div>";
 
-                //$countDown--;
+                $!emptyDown--;
                 $iterator++;
 
                  $out .= "</div>";
@@ -150,7 +150,7 @@ else
 }
 echo $out;
 
-if( count($messages)> 0)
+if( !empty($messages)> 0)
 {
     $messages->setLimit($limit);
     $messages->setTotal($total);
@@ -167,13 +167,13 @@ if( count($messages)> 0)
         'separatorItemLabel' => "<a href='#'>&hellip;</a>"
     ));
 
-    //echo '</div>';
-    //echo "<div class='clearfix'></div>";
+    echo '</div>';
+    echo "<div class='clearfix'></div>";
     echo "<div class='row mg-t-md'><div class='col-md-12'>".$pagination."</div></div>";
 }
 
 echo "</div>";
 echo "</div>";
-//echo "</div>";
+echo "</div>";
 
 ?>

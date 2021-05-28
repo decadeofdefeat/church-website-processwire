@@ -1,0 +1,80 @@
+.upcoming-events-highlight {
+border-bottom: 1px solid #2e2e2e;
+padding: 3em 0;
+background: #262626;
+}
+.upcoming-events-highlight .section-heading {
+background: #490b4d;
+padding: 2px 15px;
+display: inline-block;
+font-size: 11px;
+color: #fff;
+text-transform: uppercase;
+letter-spacing: .2em;
+margin-bottom: 15px;
+}
+.upcoming-events-highlight h2 {
+font-size: 20px;
+font-family: playfair display, times, serif;
+}
+.upcoming-events-highlight h2 a {
+color: #fff;
+}
+.upcoming-events-highlight .events-meta {
+color: rgba(255, 255, 255, .5);
+font-size: 10px;
+text-transform: uppercase;
+letter-spacing: .1em;
+}
+.upcoming-events-highlight .counter-number-item {
+background: #490b4d;
+width: 100%;
+padding: 20px;
+text-align: center;
+font-size: 30px;
+font-family: playfair display, times, serif;
+color: #fff;
+line-height: 1;
+}
+.upcoming-events-highlight #date-countdown {
+border-radius: 4px;
+overflow: hidden;
+}
+.upcoming-events-highlight #date-countdown .countdown-block {
+background: #490b4d;
+color: #fff;
+padding: 20px;
+width: 20%;
+float: left;
+text-align: center;
+text-transform: uppercase;
+position: relative;
+color: rgba(255, 255, 255, .5);
+font-size: 12px;
+}
+.upcoming-events-highlight #date-countdown .countdown-block:after {
+position: absolute;
+top: 0;
+bottom: 0;
+content: "";
+height: 100%;
+width: 1px;
+right: 0;
+background: #262626;
+}
+.upcoming-events-highlight #date-countdown .countdown-block:last-child:after {
+display: none;
+}
+.upcoming-events-highlight #date-countdown .countdown-block .label {
+color: #fff;
+font-size: 24px;
+display: block;
+}
+.worship-time {
+background: #fff;
+}
+.worship-time-list {
+list-style: none;
+padding: 0;
+margin: 0;
+}

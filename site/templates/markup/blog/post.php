@@ -45,11 +45,11 @@
                 $out .=  "<a href='{$cat->url}'>{$cat->title}</a>, ";
              }
              echo rtrim($out, ", ");
-        }
-
-        echo "</p>";
-
-
+        }?>
+<?php if( $page->show_publish_date == 1){ ?>
+<span class='entry-date'><em>Posted on <?php echo $page->date;?></em></span>
+<?php }  ?>
+<?php        echo "</p>";
 
        if( count($page->thumbnail) > 0)
        {
@@ -64,12 +64,9 @@
                  $thumb = $page->thumbnail->size(640,360)->url;
             }
 
-
             if( $page->hide_thumbnail_detail != 1 && $thumb != '')
                 echo " <div class='mg-b-sm2 mg-t-sm'><img src='{$thumb}' class=' img-responsive img-full-width' /></div>";
-
        }
-
 
     ?>
     </div>
@@ -88,17 +85,13 @@
         ?>
 
     </div>
-
-    <?php if( $page->show_publish_date == 1){ ?>
+<?php /*
+     if( $page->show_publish_date == 1){ 
    <div class='post-foot'>
       <span class='entry-date'><em>Posted on <?php echo $page->date;?></em></span>
 
 
     </div>
-    <?php }
-
-
-
-     ?>
+     }
+    */?>
 </div>
-

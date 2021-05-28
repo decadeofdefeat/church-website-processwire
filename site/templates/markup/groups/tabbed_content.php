@@ -1,15 +1,14 @@
 <?php
-/*
-  if( $page->id == 7605 )
+
+  if( $page->id == 1369 )
   {
-    //$cclass = ' not-full-width-tabs ';
-    $cclass = 'full-width-tabs';
+    $cclass = ' not-full-width-tabs ';
   }
   else
   {
     $cclass = 'full-width-tabs';
   }
-  */
+
 ?>
 <div class="row mg-t-md ">
   <div class="col-md-12">
@@ -35,7 +34,7 @@
         }
 
         $tabName =  wire('sanitizer')->pageName($c->title);
-        echo " <li  class='{$active} '><a href='#{$tabName}' aria-controls='{$tabName}' role='tab' data-toggle='tab'><div class='text-center'><span>{$c->title}</span></div></a></li>";
+        echo " <li  class='{$active} '><a href='#{$tabName}-tab' aria-controls='{$tabName}-tab' role='tab' data-toggle='tab'><div class='text-center'><span> <i class='{$c->title}'></i> </span></div></a></li>";
         $xx++;
     }
     ?>
@@ -59,7 +58,7 @@
           $active = ' active ';
         }
         $tabName =  wire('sanitizer')->pageName($c->title);
-        echo " <div role='tabpanel' class='tab-pane {$active} serif' id='{$tabName}'>";
+        echo " <div role='tabpanel' class='tab-pane {$active} serif' id='{$tabName}-tab'>";
 
         $cols = "col-md-12";
         if($c->sidebar_content != '') $cols = 'col-md-8';

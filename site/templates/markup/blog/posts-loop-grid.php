@@ -25,7 +25,7 @@
 
 
                         if($thumb != '')
-                            echo "<a href='{$post->url}'><img src='{$thumb}' class=' img-responsive img-full-width' /></a>";
+                            echo "<!a href='{$post->url}'><img src='{$thumb}' class=' img-responsive img-full-width' /></a>";
 
 
                         echo "<div style='padding:10px 20px;'>";
@@ -33,7 +33,7 @@
                             echo " <h3 style='margin-top:0px;padding-top:6px;padding-bottom:6px;'><a href='{$post->url}'>{$post->title}</a></h3>";
 
 
-                            $bodyCopy = truncate(strip_tags($post->body), 250);
+                            $bodyCopy = truncate(strip_tags($post->body), 600);
 
 
                             if($post->summary != '')

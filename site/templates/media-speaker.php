@@ -5,7 +5,7 @@
  *
  */
 
-include("./includes/head.inc");
+include("./includes/head-4.php");
 
 $pageTitle = $page->title;
 $messages = $pages->find("template=media, media_speaker.title=$pageTitle,  sort=-media_date ");
@@ -24,4 +24,4 @@ $out = $t->render();
 echo $out;
 
 
-include("./includes/foot.inc");
+include("./includes/foot-4.php");

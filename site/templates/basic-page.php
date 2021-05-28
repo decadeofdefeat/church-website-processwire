@@ -1,18 +1,28 @@
 <?php
 
+
+
 /**
+
  * Page template
+
  *
+
  */
-include("./includes/head.inc");
+
+include("./includes/head-4.php");
+
 ?>
 
 
+
+
 <div class='container mg-t-lg mg-b-lg serif'>
+
 <div class="row">
+
 <div class="col-lg-12">
 
-<?php if($page->short_header == 1) echo "<h1 class='mg-b-md'>".$page->title."</h1>";?>
 
 
 <?php echo $page->body; ?>
@@ -20,9 +30,10 @@ include("./includes/head.inc");
 
 
 </div>
+
 </div>
+
 </div>
 
 
-<?php
-include("./includes/foot.inc");
+<?php include("./includes/foot-4.php");?>

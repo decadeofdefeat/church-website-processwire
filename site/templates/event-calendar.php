@@ -1,27 +1,22 @@
 <?php
-
-
-
-
-include("./includes/head.inc");
+include("./includes/head-4.php");
 ?>
-
 
 <div class='container mg-t-lg mg-b-lg serif'>
 <div class='row'>
     <div class='col-md-12'>
         <h1 class='mg-b-md'>Event Calendar</h1>
-        <p><a href='/events/' class='btn btn-default'><i class='icon-menu-list-1'></i> Events List</a> </p>
+<!--    <p><a href='/events/' class='btn btn-default'><i class='icon-menu-list-1'></i> Events List</a> </p--  >
          <hr class='thin-hr'>
-<div class='visible-xs'>
+<!--div class='visible-xs'>
               <h4>View events on our <a href='/events/'>list view.</a></h4>
-</div>
+</div-->
 
  <div id='calendar-holder' class='hidden-xs'>
 
     <?php
 
-    $modules->get('LibJulian');
+ //   $modules->get('LibJulian');
 
     $totalMonths = 5;
 
@@ -29,7 +24,7 @@ include("./includes/head.inc");
 
     //print "****** day 1 is ". $day1ofthisMonth;
 
-    $events = $pages->find("template=event|event-repeater,  event_repeater_boolean=0, event_date>=$day1ofthisMonth, include=hidden ");
+    $events = $pages->find("template=event|event-repeater,  event_repeater_boolean=0, event_date>=$day1ofthisMonth ");
 
     // loop through 12 months
     for ($i=0; $i < $totalMonths; $i++)
@@ -192,7 +187,7 @@ include("./includes/head.inc");
                 <td class="linked-day">
                     <?php if(!$day->blank()): ?>
                         <span class='calendar-day-number <?php echo $day->today_class(); ?>'><?php echo $day->day(); ?></span>
-                        <?php if( count( $day->events() ) > 0 ) { ?>
+                        <?php if( !empty( $day->events() ) > 0 ) { ?>
                             <ul>
                             <?php
 
@@ -292,8 +287,4 @@ $(document).ready(function(){
 
 <?php $additionalJS = ob_get_clean(); ?>
 
-<?php
-
-include("./includes/foot.inc");
-
-?>
+<?php include("./includes/foot-4.php");?>

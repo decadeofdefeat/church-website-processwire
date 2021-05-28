@@ -1,0 +1,221 @@
+
+<!-- Modal -->
+<div class="modal" id="set_presets" tabindex="-1" role="dialog" aria-labelledby="set_presets_label">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+        <span aria-hidden="true">&times;</span>
+        </button>
+        <h4 class="modal-title" id="set_presets_label">Assign Presets</h4>
+      </div>
+      <div class="modal-body">
+        <div class="row">
+          <div class="col-xs-12">
+            <ol>
+              <li>Move the camera into the position you want</li>
+              <li>Click the preset button you want to assign</li>
+            </ol>
+          </div>
+        </div>
+        <br>
+        <div class="row">
+          <div class="col-xs-4">
+            <input class="btn btn-primary btn-block assign_preset" type="button" value="1">
+          </div>
+          <div class="col-xs-4">
+            <input class="btn btn-primary btn-block assign_preset" type="button" value="2">
+          </div>
+          <div class="col-xs-4">
+            <input class="btn btn-primary btn-block assign_preset" type="button" value="3">
+          </div>
+        </div>
+        <br>
+        <div class="row">
+          <div class="col-xs-4">
+            <input class="btn btn-primary btn-block assign_preset" type="button" value="4">
+          </div>
+          <div class="col-xs-4">
+            <input class="btn btn-primary btn-block assign_preset" type="button" value="5">
+          </div>
+          <div class="col-xs-4">
+            <input class="btn btn-primary btn-block assign_preset" type="button" value="6">
+          </div>
+        </div>
+        <br>
+        <div class="row">
+          <div class="col-xs-4">
+            <input class="btn btn-primary btn-block assign_preset" type="button" value="7">
+          </div>
+          <div class="col-xs-4">
+            <input class="btn btn-primary btn-block assign_preset" type="button" value="8">
+          </div>
+          <div class="col-xs-4">
+            <input class="btn btn-primary btn-block assign_preset" type="button" value="9">
+          </div>
+        </div>
+        <br>
+        <div class="row">
+          <div class="col-xs-12">
+            <input class="btn btn-primary btn-block assign_preset" type="button" value="Auto Pan Left Start Position">
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" data-dismiss="modal">Done</button>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- Modal -->
+<div class="modal" id="cam_adjust_control_settings" tabindex="-1" role="dialog" aria-labelledby="cam_adjust_control_settings_label">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+        <span aria-hidden="true">&times;</span>
+        </button>
+        <h4 class="modal-title" id="cam_adjust_control_settings_label">Preferences</h4>
+      </div>
+      <div class="modal-body">
+        <div class="row">
+          <div class="col-xs-6">
+            <div class="form-group">
+              <button class="form-control btn btn-primary adjust_setting" id="flip" data-action="flip">Flip</button>
+            </div>
+          </div>
+          <div class="col-xs-6">
+            <div class="form-group">
+              <button class="form-control btn btn-primary adjust_setting" id="mirror" data-action="mirror">Mirror</button>
+            </div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-xs-6">
+            <div class="form-group">
+              <button class="form-control btn btn-primary adjust_setting" id="invertcontrols" data-action="invertcontrols">Invert Controls</button>
+            </div>
+          </div>
+          <div class="col-xs-6">
+            <div class="form-group">
+              <button class="form-control btn btn-primary adjust_setting" id="infinitypt" data-action="infinitypt">Infinity Pan/Tilt</button>
+            </div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-xs-6">
+            <div class="form-group">
+              <a class="form-control btn btn-primary adjust_setting" data-action="infinityzoom" href="#settings">Infinity Zoom</a>
+            </div>
+          </div>
+          <div class="col-xs-6">
+            <div class="form-group">
+              <a class="form-control btn btn-primary adjust_setting" data-action="infinityfocus" href="#settings">Infinity Focus</a>
+            </div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-xs-6">
+            <label>Pan Speed</label>
+            <select class="form-control change_setting" id="panspeed">
+              <option value="1">1 (Slow)</option>
+              <option value="2">2</option>
+              <option value="3">3</option>
+              <option value="4">4</option>
+              <option value="5">5</option>
+              <option value="6">6</option>
+              <option value="7">7</option>
+              <option value="8" selected>8</option>
+              <option value="9">9</option>
+              <option value="10">10</option>
+              <option value="11">11</option>
+              <option value="12">12</option>
+              <option value="13">13</option>
+              <option value="14">14</option>
+              <option value="15">15</option>
+              <option value="16">16</option>
+              <option value="17">17</option>
+              <option value="18">18</option>
+              <option value="19">19</option>
+              <option value="20">20 (Fast)</option>
+            </select>
+          </div>
+          <div class="col-xs-6">
+            <label>Zoom Speed</label>
+            <select class="form-control change_setting" id="zoomspeed">
+              <option value="0">0 (Slow)</option>
+              <option value="1">1</option>
+              <option value="2">2</option>
+              <option value="3">3</option>
+              <option value="4">4</option>
+              <option value="5" selected>5</option>
+              <option value="6">6</option>
+              <option value="7">7 (Fast)</option>
+            </select>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-xs-6">
+            <label>Tilt Speed</label>
+            <select class="form-control change_setting" id="tiltspeed">
+              <option value="1">1 (Slow)</option>
+              <option value="2">2</option>
+              <option value="3">3</option>
+              <option value="4">4</option>
+              <option value="5">5</option>
+              <option value="6">6</option>
+              <option value="7">7</option>
+              <option value="8" selected>8</option>
+              <option value="9">9</option>
+              <option value="10">10</option>
+              <option value="11">11</option>
+              <option value="12">12</option>
+              <option value="13">13</option>
+              <option value="14">14</option>
+              <option value="15">15 (Fast)</option>
+            </select>
+          </div>
+          <div class="col-xs-6">
+            <label>Focus Speed</label>
+            <select class="form-control change_setting" id="focusspeed">
+              <option value="0">0 (Slow)</option>
+              <option value="1">1</option>
+              <option value="2">2</option>
+              <option value="3" selected>3</option>
+              <option value="4">4</option>
+              <option value="5">5</option>
+              <option value="6">6</option>
+              <option value="7">7 (Fast)</option>
+            </select>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-xs-6">
+            <label>Auto Pan Interval</label>
+            <select class="form-control change_setting" id="autopaninterval">
+              <option value="30">30 Seconds</option>
+              <option value="45">45 Seconds</option>
+              <option value="60" selected>1 Minute</option>
+              <option value="90">1 Minute, 30 Seconds</option>
+              <option value="120">2 Minutes</option>
+            </select>
+          </div>
+          <div class="col-xs-6">
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-xs-6">
+            <label for="cam_ip">IP Address</label>
+            <input class="form-control" type="text" id="cam_ip" value=""></div>
+            <div class="col-xs-6">
+              <label>&nbsp;</label>
+              <button class="btn btn-default form-control reload_cam">Reload Camera</button>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-primary" data-dismiss="modal">Done</button>
+        </div>
+      </div>
+    </div>
+  </div>
